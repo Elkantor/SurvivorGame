@@ -18,11 +18,11 @@ void DrawCircleSegments(const Vector2 _center, const f32 _radius, const u32 _seg
 {
 	if (_segments == 0) return;
 
-	const f32 angleStep = (2.0f * PI) / _segments;
+	const f32 angleStep = ((2.0f * PI) / _segments);
 
 	for (u32 i = 0; i < _segments; ++i)
 	{
-		const f32 angle = i * angleStep;
+		const f32 angle = (i * angleStep) + 3 * PI/2.f;
 		const Vector2 point = 
 		{
 			.x = _center.x + _radius * cosf(angle),
@@ -77,7 +77,7 @@ void RadialMenuRender(RadialMenu* _radialMenu)
 
 	
 	const f32 lineWidth = 2.f;
-	const u32 segments = 6;
+	const u32 segments = 5;
 	DrawCircleSegments(_radialMenu->m_start, _radialMenu->m_radius, segments, lineWidth, LIGHTGRAY);
 	DrawLineEx(_radialMenu->m_start, _radialMenu->m_end, lineWidth, BLACK);
 
@@ -85,8 +85,8 @@ void RadialMenuRender(RadialMenu* _radialMenu)
 
 	for (u32 i = 0; i < segments; ++i)
 	{
-		const f32 startAngle = i * angleStep;
-		const f32 endAngle = (i + 1) * angleStep;
+		const f32 startAngle = (i * angleStep) + 3 * PI/2.f;
+		const f32 endAngle = ((i + 1) * angleStep) + 3 * PI/2.f;
 		const Vector2 pointSeg1 =
 		{
 			.x = _radialMenu->m_start.x + _radialMenu->m_radius * cosf(startAngle),
@@ -105,7 +105,6 @@ void RadialMenuRender(RadialMenu* _radialMenu)
 		{
 			Color enableColor = { 0, 117, 44, 150 };
 			DrawCircleSector(_radialMenu->m_start, _radialMenu->m_radius, startAngle * RAD2DEG, endAngle * RAD2DEG, segments, enableColor);
-			//DrawCircleSectorLines(_radialMenu->m_start, _radialMenu->m_radius, startAngle * RAD2DEG, endAngle * RAD2DEG, segments, DARKGREEN);
 			break;
 		}
 	}
