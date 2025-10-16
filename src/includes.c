@@ -1,0 +1,19 @@
+#pragma once
+
+#include "core/raylib.h"
+#include "core/raymath.h"
+#include "core/types.c"
+#include "core/utils/arena.c"
+#include "core/math/lines.c"
+#include "core/3D/utils3D.c"
+#include "core/3D/renderTexture3D.c"
+#include "core/ui/radialMenu.c"
+
+#include "app/menus/hud.c"
+#include "app/game/3C/gameCamera.c"
+#include "app/game/entities/building.c"
+#include "app/game/scene.c"
+#include "app/game/game.c"
+
+
+static Arena* g_frameArenaPtr = NULL;

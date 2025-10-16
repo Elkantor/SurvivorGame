@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "windef.h": "c",
+        "wtypesbase.h": "c",
+        "winuser.h": "c",
+        "minwindef.h": "c",
+        "dwmapi.h": "c",
+        "wtypes.h": "c",
+        "guiddef.h": "c",
+        "rpcndr.h": "c"
+    }
+}

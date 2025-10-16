@@ -1,0 +1,1 @@
+zig cc ./src/main.c -L./libs -lDwmapi -lwinmm -lgdi32 -lopengl32 -lraylib -Werror -Wall
