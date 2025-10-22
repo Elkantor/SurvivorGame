@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../types.c"
 #include "../raylib.h"
 
 typedef struct RenderTexture3D

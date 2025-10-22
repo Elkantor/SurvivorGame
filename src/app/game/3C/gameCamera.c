@@ -23,8 +23,8 @@ void GameCameraInit(GameCamera* _gameCamera)
 
     _gameCamera->m_moveSpeed = 0.1f;
     _gameCamera->m_rotationSpeed = 0.001f;
-    _gameCamera->m_zoomSpeed = 1.0f;
-    _gameCamera->m_zoonMin = 2.f;
+    _gameCamera->m_zoomSpeed = 1.5f;
+    _gameCamera->m_zoonMin = 5.f;
     _gameCamera->m_zoomMax = 100.f;
     _gameCamera->m_zoomLevel = 0.f;
 }
@@ -60,7 +60,7 @@ void GameCameraUpdate(GameCamera* _gameCamera, const f32 _dt)
         }
     }
 
-    const f32 moveSpeedFactor = _gameCamera->m_moveSpeed * (_gameCamera->m_zoomLevel / 20.f * PI);
+    const f32 moveSpeedFactor = _gameCamera->m_moveSpeed * (_gameCamera->m_zoomLevel / 30.f * PI);
 
     // Move camera
     {

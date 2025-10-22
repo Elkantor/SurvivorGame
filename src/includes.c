@@ -7,6 +7,9 @@
 #include "core/math/lines.c"
 #include "core/3D/utils3D.c"
 #include "core/3D/renderTexture3D.c"
+#include "core/3D/grid.c"
+#include "core/shaders/shaderFlatColor.c"
+#include "core/shaders/shaderOutline.c"
 #include "core/ui/radialMenu.c"
 
 #include "app/menus/hud.c"

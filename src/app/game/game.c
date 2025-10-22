@@ -7,7 +7,7 @@ typedef struct Game
 {
     Font m_globalFont;
     Scene m_scene;
-    RenderTexture3D m_renderTexture;
+    RenderTexture3D m_passColorPicker;
     GameCamera m_camera;
     HUD m_hud;
     f32 m_gold;
@@ -18,7 +18,7 @@ void GameInit(Game* _game)
 {
     _game->m_globalFont = LoadFontEx("resources/fonts/aclonica-v25-latin/aclonica-v25-latin-regular.ttf", 24, NULL, 167);
 
-    RenderTexture3DInit(&_game->m_renderTexture);
+    RenderTexture3DInit(&_game->m_passColorPicker);
     GameCameraInit(&_game->m_camera);
     SceneInit(&_game->m_scene);
 
@@ -35,16 +35,16 @@ void GameUpdate(Game* _game, const f32 _dt)
 void GameRender(Game* _game)
 {
     // Color map
-    /*BeginTextureMode(_game->m_renderTexture.m_texture);
+    BeginTextureMode(_game->m_passColorPicker.m_texture);
     {
-        ClearBackground(RAYWHITE);
+        ClearBackground(WHITE);
         BeginMode3D(_game->m_camera.m_cam);
         {
             SceneRenderFlat(&_game->m_scene);
         }
         EndMode3D();
     }
-    EndTextureMode();*/
+    EndTextureMode();
 
     BeginDrawing();
     {
@@ -53,24 +53,9 @@ void GameRender(Game* _game)
         BeginMode3D(_game->m_camera.m_cam);
         {
             SceneRender(&_game->m_scene);
-            //DrawTexture(_game->m_renderTexture.m_texture.texture, 0, 0, WHITE);
-            //DrawGrid(20, 1.0f);
-            const f32 lines = 100.f;
-            const f32 columns = 100.f;
 
-            for (f32 i = 0; i < lines + 1; ++i)
-            {
-                const Vector3 startPos = { .x = -columns / 2.f, .y = 0.f, .z = (-lines / 2.f) + i };
-                const Vector3 endPos = { .x = columns / 2.f, .y = 0.f, .z = (-lines / 2.f) + i };
-                DrawLine3D(startPos, endPos, WHITE);
-            }
-            
-            for (f32 i = 0; i < columns + 1; ++i)
-            {
-                const Vector3 startPos = { .x = (-columns / 2.f) + i, .y = 0.f, .z = -lines / 2.f };
-                const Vector3 endPos = { .x = (-columns / 2.f) + i, .y = 0.f, .z = lines / 2.f };
-                DrawLine3D(startPos, endPos, WHITE);
-            }
+            Grid grid = { .m_lines = 100.f, .m_columns = 100.f };
+            GridRender(&grid, WHITE);
         }
         EndMode3D();
 
@@ -81,6 +66,13 @@ void GameRender(Game* _game)
             char goldTxt[20] = { 0 };
             snprintf(goldTxt, 20, "Gold: %f", _game->m_gold);
             DrawTextEx(_game->m_globalFont, goldTxt, (Vector2) { 10.f, 10.f }, _game->m_globalFont.baseSize, 1, BLACK);
+
+            if (IsKeyDown(KEY_F1))
+            {
+                const f32 w = _game->m_passColorPicker.m_texture.texture.width;
+                const f32 h = _game->m_passColorPicker.m_texture.texture.height;
+                DrawTextureRec(_game->m_passColorPicker.m_texture.texture, (Rectangle) { 0.f, 0.f, w, -h }, (Vector2) { 0, 0 }, WHITE);
+            }
         }
     }
     EndDrawing();
