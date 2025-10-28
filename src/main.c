@@ -1,7 +1,6 @@
 #include "includes.c"
 
 static Arena mainArena;
-static Arena frameArena;
 
 int main(int _argc, char** _argv)
 {
@@ -12,17 +11,11 @@ int main(int _argc, char** _argv)
     Game* game = ArenaPush(&mainArena, sizeof(Game));
     GameInit(game);
 
-    g_frameArenaPtr = &frameArena;
-
     while (WindowShouldClose() == false)
     {
-        const char* startFrameArenaPtr = ArenaPush(g_frameArenaPtr, sizeof(char));
-
         const f32 deltaTime = GetFrameTime();
         GameUpdate(game, deltaTime);
         GameRender(game);
-
-        ArenaPop(g_frameArenaPtr, (void*)startFrameArenaPtr);
     }
 
     CloseWindow();

@@ -11,12 +11,10 @@
 #include "core/shaders/shaderFlatColor.c"
 #include "core/shaders/shaderOutline.c"
 #include "core/ui/radialMenu.c"
+#include "core/ui/console.c"
 
 #include "app/menus/hud.c"
 #include "app/game/3C/gameCamera.c"
 #include "app/game/entities/building.c"
 #include "app/game/scene.c"
 #include "app/game/game.c"
-
-
-static Arena* g_frameArenaPtr = NULL;

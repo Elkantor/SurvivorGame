@@ -11,11 +11,15 @@ typedef struct Game
     GameCamera m_camera;
     HUD m_hud;
     f32 m_gold;
+
+    Console m_console;
 } Game;
 
 
 void GameInit(Game* _game)
 {
+    memset(_game, 0, sizeof(Game));
+
     _game->m_globalFont = LoadFontEx("resources/fonts/aclonica-v25-latin/aclonica-v25-latin-regular.ttf", 24, NULL, 167);
 
     RenderTexture3DInit(&_game->m_passColorPicker);
@@ -27,7 +31,13 @@ void GameInit(Game* _game)
 
 void GameUpdate(Game* _game, const f32 _dt)
 {
-    GameCameraUpdate(&_game->m_camera, _dt);
+    ConsoleUpdate(&_game->m_console, _dt);
+    
+    if (_game->m_console.m_drawable == false)
+    {
+        GameCameraUpdate(&_game->m_camera, _dt);
+    }
+
     SceneUpdate(&_game->m_scene, _dt);
     UpdateCamera(&_game->m_camera.m_cam, _game->m_camera.m_cam.projection);
 }
@@ -73,6 +83,8 @@ void GameRender(Game* _game)
                 const f32 h = _game->m_passColorPicker.m_texture.texture.height;
                 DrawTextureRec(_game->m_passColorPicker.m_texture.texture, (Rectangle) { 0.f, 0.f, w, -h }, (Vector2) { 0, 0 }, WHITE);
             }
+
+            ConsoleRender(&_game->m_console, GetFrameTime());
         }
     }
     EndDrawing();
