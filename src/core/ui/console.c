@@ -1,14 +1,17 @@
 #pragma once
 
+#include <ctype.h>
 #include "../types.c"
 #include "../raylib.h"
 #include "../utils/arena.c"
+#include "../utils/timer.c"
 
 typedef struct Console
 {
 	u32 m_cursorPos;
-	bool m_drawable : 1;
 	char m_typedText[100];
+	Timer m_inputHoldTimer;
+	bool m_drawable : 1;
 } Console;
 
 void ConsoleDrawDebug(Rectangle _container)
@@ -161,6 +164,8 @@ void ConsoleRender(const Console* _console, const f32 _dt)
 
 void ConsoleUpdate(Console* _current, const f32 _dt)
 {
+	bool inputHold = false;
+
 	if (IsKeyPressed(KEY_F2))
 	{
 		_current->m_drawable = !_current->m_drawable;
@@ -205,17 +210,20 @@ void ConsoleUpdate(Console* _current, const f32 _dt)
 		
 		if (_current->m_cursorPos < capacity)
 			_current->m_cursorPos += 1;
+
+		inputHold = true;
 	}
 
-	const int charPressed = GetCharPressed();
+	const i32 charPressed = GetCharPressed();
 	if (charPressed == 0)
 		return;
 
-	if (charPressed == 'a' || charPressed == 'A')
+	const i32 charToLower = tolower(charPressed);
+
 	{
 		const u32 textLength = TextLength(_current->m_typedText);
 		const u32 capacity = sizeof(_current->m_typedText) / sizeof(_current->m_typedText[0]);
-		ConsoleInsertCharAtCursor(_current->m_typedText, textLength, capacity, _current->m_cursorPos, 'a');
+		ConsoleInsertCharAtCursor(_current->m_typedText, textLength, capacity, _current->m_cursorPos, charToLower);
 		
 		if (_current->m_cursorPos < capacity)
 			_current->m_cursorPos += 1;
