@@ -1,9 +1,11 @@
 #pragma once
 
+#include <ctype.h>
 #include "core/raylib.h"
 #include "core/raymath.h"
 #include "core/types.c"
 #include "core/utils/arena.c"
+#include "core/utils/timer.c"
 #include "core/math/lines.c"
 #include "core/3D/utils3D.c"
 #include "core/3D/renderTexture3D.c"

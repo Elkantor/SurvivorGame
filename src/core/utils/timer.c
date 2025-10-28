@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../types.c"
-#include "../raylib.c"
+#include "../raylib.h"
 
 typedef struct Timer
 {
@@ -27,17 +27,17 @@ void TimerStart(Timer* _timer)
 	_timer->m_started = true;
 }
 
-void TimerIsStarted(Timer* _timer)
+bool TimerIsStarted(Timer* _timer)
 {
 	return _timer->m_started;
 }
 
-void TimerIsFinished(Timer* _timer)
+bool TimerIsFinished(Timer* _timer)
 {
 	return _timer->m_finished;
 }
 
-void TimerIsPaused(Timer* _timer)
+bool TimerIsPaused(Timer* _timer)
 {
 	return _timer->m_paused;
 }

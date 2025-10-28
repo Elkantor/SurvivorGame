@@ -8,9 +8,10 @@
 
 typedef struct Console
 {
-	u32 m_cursorPos;
 	char m_typedText[100];
 	Timer m_inputHoldTimer;
+	u32 m_cursorPos;
+	i32 m_charPressed;
 	bool m_drawable : 1;
 } Console;
 
@@ -136,7 +137,7 @@ void ConsoleInsertCharAtCursor(char* _text, const u32 _textLen, const u32 _textC
 	if (_textLen > 0)
 	{
 		// Shift the characters to the right
-		for (u32 i = _textLen; i >= _cursor; --i)
+		for (u32 i = _textLen; i > _cursor; --i)
 		{
 			_text[i] = _text[i - 1];
 		}
@@ -164,8 +165,6 @@ void ConsoleRender(const Console* _console, const f32 _dt)
 
 void ConsoleUpdate(Console* _current, const f32 _dt)
 {
-	bool inputHold = false;
-
 	if (IsKeyPressed(KEY_F2))
 	{
 		_current->m_drawable = !_current->m_drawable;
@@ -202,24 +201,13 @@ void ConsoleUpdate(Console* _current, const f32 _dt)
 		if (_current->m_cursorPos > 0)
 			_current->m_cursorPos -= 1;
 	}
-	else if (IsKeyPressed(KEY_SPACE))
-	{
-		const u32 textLength = TextLength(_current->m_typedText);
-		const u32 capacity = sizeof(_current->m_typedText) / sizeof(_current->m_typedText[0]);
-		ConsoleInsertCharAtCursor(_current->m_typedText, textLength, capacity, _current->m_cursorPos, ' ');
-		
-		if (_current->m_cursorPos < capacity)
-			_current->m_cursorPos += 1;
-
-		inputHold = true;
-	}
 
 	const i32 charPressed = GetCharPressed();
+
 	if (charPressed == 0)
 		return;
 
 	const i32 charToLower = tolower(charPressed);
-
 	{
 		const u32 textLength = TextLength(_current->m_typedText);
 		const u32 capacity = sizeof(_current->m_typedText) / sizeof(_current->m_typedText[0]);
