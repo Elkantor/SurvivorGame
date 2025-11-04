@@ -21,8 +21,12 @@ typedef u16 id;
 
 typedef f32 percent; //NOTE(VictorGallet): Goes from 0.0 to 1.0 for [0%-100%]
 
-typedef struct { u32 m_x, m_y; } vec2u32;
 typedef struct { i32 m_x, m_y; } vec2i32;
+typedef struct { u32 m_x, m_y; } vec2u32;
+
+const u32 IndexInvalid = UINT32_MAX;
+
+const f32 TinyEpsilon = 1e-6f;
 
 // Helper macros
 #define concat(a, b) (a ## b)

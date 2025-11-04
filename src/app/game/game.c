@@ -15,6 +15,8 @@ typedef struct Game
     Console m_console;
 } Game;
 
+const f32 k_gridWidth = 100.f;
+const f32 k_gridHeight = 100.f;
 
 void GameInit(Game* _game)
 {
@@ -64,8 +66,8 @@ void GameRender(Game* _game)
         {
             SceneRender(&_game->m_scene);
 
-            Grid grid = { .m_lines = 100.f, .m_columns = 100.f };
-            GridRender(&grid, WHITE);
+            Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
+            GridRender(&grid, _game->m_camera.m_cam, WHITE);
         }
         EndMode3D();
 
@@ -85,6 +87,12 @@ void GameRender(Game* _game)
             }
 
             ConsoleRender(&_game->m_console, GetFrameTime());
+
+            Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
+            const vec2u32 cellOvered = GridSelect(&grid, GetMousePosition(), _game->m_camera.m_cam);
+            char cellPosTxt[50] = { 0 };
+            snprintf(cellPosTxt, 50, "Cell pos: x: %d, y: %d", cellOvered.m_x, cellOvered.m_y);
+            DrawTextEx(_game->m_globalFont, cellPosTxt, (Vector2) { 10.f, GetScreenHeight() - 20.f }, _game->m_globalFont.baseSize, 1, BLACK);
         }
     }
     EndDrawing();
