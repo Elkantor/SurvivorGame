@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../raylib.h"
+#include "../rlgl.h"
 #include "../types.c"
 #include "math.h"
 
@@ -50,20 +51,59 @@ vec2u32 GridSelect(const Grid* _grid, const Vector2 _screenPos, const Camera _ca
     return (vec2u32) { IndexInvalid, IndexInvalid };
 }
 
+//void DrawThickLine3D(const Vector3 start, const Vector3 end, const f32 thickness, const Color color)
+//{
+//    const f32 radius = thickness / 2.0f;
+//    const i32 sides = 4;
+//
+//    DrawCylinderEx(start, end, radius, radius, sides, color);
+//}
+
+void DrawThickLine3D(const Vector3 start, const Vector3 end, const float thickness, Color color, const Camera camera)
+{
+    // Calcul du midpoint pour estimer la distance
+    const Vector3 midpoint = {
+        .x = (start.x + end.x) / 2.0f,
+        .y = (start.y + end.y) / 2.0f,
+        .z = (start.z + end.z) / 2.0f
+    };
+
+    const float dist = Vector3Distance(camera.position, midpoint);
+
+    const float fadeStart = 15.0f;
+    const float fadeEnd = 100.0f;
+
+    float alpha = 1.0f;
+    if (dist > fadeStart)
+    {
+        alpha = fmaxf(0.0f, 1.0f - (dist - fadeStart) / (fadeEnd - fadeStart));
+    }
+
+    color.a = (unsigned char)(255.0f * alpha);
+
+    const float radius = thickness / 2.0f;
+    const int sides = 4;
+
+    DrawCylinderEx(start, end, radius, radius, sides, color);
+}
+
 void GridRender(Grid* _grid, const Camera _gameCamera, const Color _color)
 {
+    const f32 thickness = 0.05f;
+    const f32 thicknessSelected = 0.06f;
+
     for (f32 i = 0; i < _grid->m_lines + 1; ++i)
     {
         const Vector3 startPos = { .x = -_grid->m_columns / 2.f, .y = 0.f, .z = (-_grid->m_lines / 2.f) + i };
         const Vector3 endPos = { .x = _grid->m_columns / 2.f, .y = 0.f, .z = (-_grid->m_lines / 2.f) + i };
-        DrawLine3D(startPos, endPos, _color);
+        DrawThickLine3D(startPos, endPos, thickness, _color, _gameCamera);
     }
 
     for (f32 i = 0; i < _grid->m_columns + 1; ++i)
     {
         const Vector3 startPos = { .x = (-_grid->m_columns / 2.f) + i, .y = 0.f, .z = -_grid->m_lines / 2.f };
         const Vector3 endPos = { .x = (-_grid->m_columns / 2.f) + i, .y = 0.f, .z = _grid->m_lines / 2.f };
-        DrawLine3D(startPos, endPos, _color);
+        DrawThickLine3D(startPos, endPos, thickness, _color, _gameCamera);
     }
 
     // Draw overed cell in a specific color
@@ -83,21 +123,21 @@ void GridRender(Grid* _grid, const Camera _gameCamera, const Color _color)
         // Bottom line
         const Vector3 bottomStart = {.x = left, .y = 0.f, .z = bottom };
         const Vector3 bottomEnd = {.x = right, .y = 0.f, .z = bottom };
-        DrawLine3D(bottomStart, bottomEnd, highlightColor);
+        DrawThickLine3D(bottomStart, bottomEnd, thicknessSelected, highlightColor, _gameCamera);
 
         // Top line
         const Vector3 topStart = {.x = left, .y = 0.f, .z = top };
         const Vector3 topEnd = {.x = right, .y = 0.f, .z = top };
-        DrawLine3D(topStart, topEnd, highlightColor);
+        DrawThickLine3D(topStart, topEnd, thicknessSelected, highlightColor, _gameCamera);
 
         // Left line
         const Vector3 leftStart = {.x = left, .y = 0.f, .z = bottom };
         const Vector3 leftEnd = {.x = left, .y = 0.f, .z = top };
-        DrawLine3D(leftStart, leftEnd, highlightColor);
+        DrawThickLine3D(leftStart, leftEnd, thicknessSelected, highlightColor, _gameCamera);
 
         // Right line
         const Vector3 rightStart = {.x = right, .y = 0.f, .z = bottom };
         const Vector3 rightEnd = {.x = right, .y = 0.f, .z = top };
-        DrawLine3D(rightStart, rightEnd, highlightColor);
+        DrawThickLine3D(rightStart, rightEnd, thicknessSelected, highlightColor, _gameCamera);
     }
 }
