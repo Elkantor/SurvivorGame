@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../raylib.h"
+#include "../raymath.h"
 #include "../rlgl.h"
 #include "../types.c"
 #include "math.h"
@@ -51,65 +52,72 @@ vec2u32 GridSelect(const Grid* _grid, const Vector2 _screenPos, const Camera _ca
     return (vec2u32) { IndexInvalid, IndexInvalid };
 }
 
-//void DrawThickLine3D(const Vector3 start, const Vector3 end, const f32 thickness, const Color color)
-//{
-//    const f32 radius = thickness / 2.0f;
-//    const i32 sides = 4;
-//
-//    DrawCylinderEx(start, end, radius, radius, sides, color);
-//}
-
-void DrawThickLine3D(const Vector3 start, const Vector3 end, const float thickness, Color color, const Camera camera)
+void DrawThickLine3D(const Vector3 start, const Vector3 end, const float thickness, Color color)
 {
-    const Vector3 midpoint = 
-    {
-        .x = (start.x + end.x) / 2.0f,
-        .y = (start.y + end.y) / 2.0f,
-        .z = (start.z + end.z) / 2.0f
-    };
-
-    const f32 dist = Vector3Distance(camera.position, midpoint);
-
-    const float fadeStart = 15.0f;
-    const float fadeEnd = 100.0f;
-
-    float alpha = 1.0f;
-    if (dist > fadeStart)
-    {
-        alpha = fmaxf(0.0f, 1.0f - (dist - fadeStart) / (fadeEnd - fadeStart));
-    }
-
-    color.a = (unsigned char)(255.0f * alpha);
-
-    const float radius = thickness / 2.0f;
-    const int sides = 4;
-
-    DrawCylinderEx(start, end, radius, radius, sides, color);
+    const i32 sides = 4;
+    DrawCylinderEx(start, end, thickness, thickness, sides, color);
 }
 
-void GridRender(Grid* _grid, const Camera _gameCamera, const Color _color)
+Vector3 GridCameraTargetGet(const Camera _gameCamera)
 {
-    const f32 thickness = 0.05f;
-    const f32 thicknessSelected = 0.06f;
+    // Calculate center : intersection with camera and the plane at Y=0
+    const Vector3 viewDir = Vector3Normalize(Vector3Subtract(_gameCamera.target, _gameCamera.position));
+    Vector3 center = { 0 };
+
+    if (fabsf(viewDir.y) >= TinyEpsilon)
+    {
+        const f32 t = -_gameCamera.position.y / viewDir.y;
+
+        if (t >= 0.0f)
+        {
+            center.x = _gameCamera.position.x + t * viewDir.x;
+            center.y = 0.0f;
+            center.z = _gameCamera.position.z + t * viewDir.z;
+        }
+    }
+
+    return center;
+}
+
+void GridRender(Grid* _grid, const Camera _gameCamera, const Shader _shaderRadialFade, const Color _color)
+{
+    const Vector3 center = GridCameraTargetGet(_gameCamera);
+    const f32 thickness = 0.03f;
+    const f32 distScale = 30.0f;
+
+    i32 centerLoc = GetShaderLocation(_shaderRadialFade, "center");
+    SetShaderValueV(_shaderRadialFade, centerLoc, &center, SHADER_UNIFORM_VEC3, 1);
+
+    i32 cameraPosLoc = GetShaderLocation(_shaderRadialFade, "cameraPos");
+    SetShaderValueV(_shaderRadialFade, cameraPosLoc, &_gameCamera.position, SHADER_UNIFORM_VEC3, 1);
+
+    i32 distScaleLoc = GetShaderLocation(_shaderRadialFade, "distScale");
+    SetShaderValue(_shaderRadialFade, distScaleLoc, &distScale, SHADER_UNIFORM_FLOAT);
+
+    BeginShaderMode(_shaderRadialFade);
 
     for (f32 i = 0; i < _grid->m_lines + 1; ++i)
     {
         const Vector3 startPos = { .x = -_grid->m_columns / 2.f, .y = 0.f, .z = (-_grid->m_lines / 2.f) + i };
         const Vector3 endPos = { .x = _grid->m_columns / 2.f, .y = 0.f, .z = (-_grid->m_lines / 2.f) + i };
-        DrawThickLine3D(startPos, endPos, thickness, _color, _gameCamera);
+        DrawThickLine3D(startPos, endPos, thickness, _color);
     }
 
     for (f32 i = 0; i < _grid->m_columns + 1; ++i)
     {
         const Vector3 startPos = { .x = (-_grid->m_columns / 2.f) + i, .y = 0.f, .z = -_grid->m_lines / 2.f };
         const Vector3 endPos = { .x = (-_grid->m_columns / 2.f) + i, .y = 0.f, .z = _grid->m_lines / 2.f };
-        DrawThickLine3D(startPos, endPos, thickness, _color, _gameCamera);
+        DrawThickLine3D(startPos, endPos, thickness, _color);
     }
+
+    EndShaderMode();
 
     // Draw overed cell in a specific color
     {
+        const f32 thicknessSelected = 0.04f;
         const Vector2 mousePos = GetMousePosition();
         const vec2u32 cellOvered = GridSelect(_grid, mousePos, _gameCamera);
+
         if (cellOvered.m_x == IndexInvalid || cellOvered.m_y == IndexInvalid)
             return;
 
@@ -123,21 +131,21 @@ void GridRender(Grid* _grid, const Camera _gameCamera, const Color _color)
         // Bottom line
         const Vector3 bottomStart = {.x = left, .y = 0.f, .z = bottom };
         const Vector3 bottomEnd = {.x = right, .y = 0.f, .z = bottom };
-        DrawThickLine3D(bottomStart, bottomEnd, thicknessSelected, highlightColor, _gameCamera);
+        DrawThickLine3D(bottomStart, bottomEnd, thicknessSelected, highlightColor);
 
         // Top line
         const Vector3 topStart = {.x = left, .y = 0.f, .z = top };
         const Vector3 topEnd = {.x = right, .y = 0.f, .z = top };
-        DrawThickLine3D(topStart, topEnd, thicknessSelected, highlightColor, _gameCamera);
+        DrawThickLine3D(topStart, topEnd, thicknessSelected, highlightColor);
 
         // Left line
         const Vector3 leftStart = {.x = left, .y = 0.f, .z = bottom };
         const Vector3 leftEnd = {.x = left, .y = 0.f, .z = top };
-        DrawThickLine3D(leftStart, leftEnd, thicknessSelected, highlightColor, _gameCamera);
+        DrawThickLine3D(leftStart, leftEnd, thicknessSelected, highlightColor);
 
         // Right line
         const Vector3 rightStart = {.x = right, .y = 0.f, .z = bottom };
         const Vector3 rightEnd = {.x = right, .y = 0.f, .z = top };
-        DrawThickLine3D(rightStart, rightEnd, thicknessSelected, highlightColor, _gameCamera);
+        DrawThickLine3D(rightStart, rightEnd, thicknessSelected, highlightColor);
     }
 }
