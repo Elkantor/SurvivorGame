@@ -61,14 +61,14 @@ vec2u32 GridSelect(const Grid* _grid, const Vector2 _screenPos, const Camera _ca
 
 void DrawThickLine3D(const Vector3 start, const Vector3 end, const float thickness, Color color, const Camera camera)
 {
-    // Calcul du midpoint pour estimer la distance
-    const Vector3 midpoint = {
+    const Vector3 midpoint = 
+    {
         .x = (start.x + end.x) / 2.0f,
         .y = (start.y + end.y) / 2.0f,
         .z = (start.z + end.z) / 2.0f
     };
 
-    const float dist = Vector3Distance(camera.position, midpoint);
+    const f32 dist = Vector3Distance(camera.position, midpoint);
 
     const float fadeStart = 15.0f;
     const float fadeEnd = 100.0f;
