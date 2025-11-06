@@ -33,3 +33,10 @@ const f32 TinyEpsilon = 1e-6f;
 #define concat2(a, b) concat(a, b)
 #define macro_var(name) concat2(name, __LINE__)
 #define defer(start, end) for(i32 macro_var(_i_) = (start, 0); !macro_var(_i_); (macro_var(_i_) += 1), end)
+
+void convertUint16ToFloat3Array(u16 _input, f32 _output[3])
+{
+	_output[0] = (f32)(_input & 0xFF);
+	_output[1] = (f32)((_input >> 8) & 0xFF);
+	_output[2] = (f32)((_input >> 4) & 0xFF);
+}

@@ -49,3 +49,13 @@ Vector3 Utils3DGetRotation(const Matrix _transform)
         eulerRad.z * RAD2DEG
     };
 }
+
+Matrix Utils3DCreateTransform(const Vector3 _pos, const Vector3 _rotation, const Vector3 _scale)
+{
+    const Matrix matScale = MatrixScale(_scale.x, _scale.y, _scale.z);
+    const Matrix matRotation = MatrixRotateXYZ((Vector3) { _rotation.x, _rotation.y, _rotation.z });
+    const Matrix matTranslation = MatrixTranslate(_pos.x, _pos.y, _pos.z);
+    const Matrix transform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
+
+    return transform;
+}

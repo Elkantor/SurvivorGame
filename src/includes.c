@@ -10,6 +10,7 @@
 #include "core/3D/utils3D.c"
 #include "core/3D/renderTexture3D.c"
 #include "core/3D/grid.c"
+#include "core/3D/shadow.c"
 #include "core/shaders/shaderFlatColor.c"
 #include "core/shaders/shaderOutline.c"
 #include "core/ui/radialMenu.c"

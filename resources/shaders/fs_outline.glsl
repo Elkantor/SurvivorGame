@@ -1,37 +1,42 @@
 #version 330
 
 in vec2 fragTexCoord;
+
 out vec4 finalColor;
 
-uniform sampler2D texture0;       // Color buffer
-uniform sampler2D depthTex;       // Depth buffer
-uniform vec2 screenSize;
-uniform vec4 outlineColor;
-uniform float edgeThreshold;
+uniform sampler2D texture0;
 
-float GetDepth(vec2 uv)
-{
-    return texture(depthTex, uv).r;
-}
+// Input
+uniform int size;
+uniform int width;
+uniform int height;
+uniform vec4 color;
+uniform vec3 pickingColor;
 
 void main()
 {
-    vec2 texel = 1.0 / screenSize;
+    float x = 1.0 / width;
+    float y = 1.0 / height;
 
-    float depth = GetDepth(fragTexCoord);
-    float d1 = GetDepth(fragTexCoord + vec2(texel.x, 0.0));
-    float d2 = GetDepth(fragTexCoord + vec2(-texel.x, 0.0));
-    float d3 = GetDepth(fragTexCoord + vec2(0.0, texel.y));
-    float d4 = GetDepth(fragTexCoord + vec2(0.0, -texel.y));
+    if (pickingColor == vec3(1.0f, 1.0f, 1.0f)) discard;
 
-    float diff = 0.0;
-    diff += abs(depth - d1);
-    diff += abs(depth - d2);
-    diff += abs(depth - d3);
-    diff += abs(depth - d4);
+    if (texture(texture0, fragTexCoord).rgb == pickingColor)
+    {
+        for (int i = -size; i <= size; ++i)
+        {
+            for (int j = -size; j <= size; ++j)
+            {
+                if (i == 0 && j == 0)
+                {
+                    continue;
+                }
 
-    if (diff > edgeThreshold)
-        finalColor = outlineColor;
-    else
-        finalColor = texture(texture0, fragTexCoord);
+                if (texture(texture0, fragTexCoord + vec2(i, j) * vec2(x, y)).rgb != pickingColor)
+                {
+                    finalColor = color;
+                    return;
+                }
+            }
+        }
+    }
 }

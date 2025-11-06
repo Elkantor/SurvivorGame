@@ -12,7 +12,48 @@ typedef struct Grid
     f32 m_columns;
 } Grid;
 
-vec2u32 GridSelect(const Grid* _grid, const Vector2 _screenPos, const Camera _camera3D)
+vec2u32 GridIndexFromWorldPos(const Grid _grid, const Vector3 _worldPos)
+{
+    const Vector3 point =
+    {
+        .x = _worldPos.x,
+        .y = 0.0f,
+        .z = _worldPos.z
+    };
+
+    const f32 min_x = -_grid.m_columns / 2.0f;
+    const f32 min_z = -_grid.m_lines / 2.0f;
+
+    const f32 fx = point.x - min_x;
+    const f32 fz = point.z - min_z;
+
+    const f32 ix = floorf(fx);
+    const f32 iy = floorf(fz);
+
+    if (ix >= 0 && ix < _grid.m_columns &&
+        iy >= 0 && iy < _grid.m_lines &&
+        fx >= 0.0f && fz >= 0.0f) {
+        return (vec2u32) { (u32)ix, (u32)iy };
+    }
+
+    return (vec2u32) { IndexInvalid, IndexInvalid };
+}
+
+Vector3 GridWorldPosFromIndex(const Grid _grid, const vec2u32 _gridIndex)
+{
+    if (_gridIndex.m_x == IndexInvalid || _gridIndex.m_y == IndexInvalid)
+        return (Vector3) { INFINITY, INFINITY, INFINITY };
+
+    const f32 min_x = -_grid.m_columns / 2.0f;
+    const f32 min_z = -_grid.m_lines / 2.0f;
+
+    const f32 px = _gridIndex.m_x + min_x + 0.5f; // 0.5 to get the center of the cell
+    const f32 pz = _gridIndex.m_y + min_z + 0.5f;
+
+    return (Vector3) { px, 0.f, pz };
+}
+
+vec2u32 GridSelect(const Grid _grid, const Vector2 _screenPos, const Camera _camera3D)
 {
     const Ray mouseRay = GetScreenToWorldRay(_screenPos, _camera3D);
 
@@ -34,23 +75,9 @@ vec2u32 GridSelect(const Grid* _grid, const Vector2 _screenPos, const Camera _ca
         .z = mouseRay.position.z + t * mouseRay.direction.z
     };
 
-    const f32 min_x = -_grid->m_columns / 2.0f;
-    const f32 min_z = -_grid->m_lines / 2.0f;
-
-    const f32 fx = point.x - min_x;
-    const f32 fz = point.z - min_z;
-
-    const f32 ix = floorf(fx);
-    const f32 iy = floorf(fz);
-
-    if (ix >= 0 && ix < _grid->m_columns &&
-        iy >= 0 && iy < _grid->m_lines &&
-        fx >= 0.0f && fz >= 0.0f) {
-        return (vec2u32) { (u32)ix, (u32)iy };
-    }
-
-    return (vec2u32) { IndexInvalid, IndexInvalid };
+    return GridIndexFromWorldPos(_grid, point);
 }
+
 
 void DrawThickLine3D(const Vector3 start, const Vector3 end, const float thickness, Color color)
 {
@@ -79,7 +106,7 @@ Vector3 GridCameraTargetGet(const Camera _gameCamera)
     return center;
 }
 
-void GridRender(Grid* _grid, const Camera _gameCamera, const Shader _shaderRadialFade, const Color _color)
+void GridRender(const Grid _grid, const Camera _gameCamera, const Shader _shaderRadialFade, const Color _color)
 {
     const Vector3 center = GridCameraTargetGet(_gameCamera);
     const f32 thickness = 0.03f;
@@ -96,17 +123,17 @@ void GridRender(Grid* _grid, const Camera _gameCamera, const Shader _shaderRadia
 
     BeginShaderMode(_shaderRadialFade);
 
-    for (f32 i = 0; i < _grid->m_lines + 1; ++i)
+    for (f32 i = 0; i < _grid.m_lines + 1; ++i)
     {
-        const Vector3 startPos = { .x = -_grid->m_columns / 2.f, .y = 0.f, .z = (-_grid->m_lines / 2.f) + i };
-        const Vector3 endPos = { .x = _grid->m_columns / 2.f, .y = 0.f, .z = (-_grid->m_lines / 2.f) + i };
+        const Vector3 startPos = { .x = -_grid.m_columns / 2.f, .y = 0.f, .z = (-_grid.m_lines / 2.f) + i };
+        const Vector3 endPos = { .x = _grid.m_columns / 2.f, .y = 0.f, .z = (-_grid.m_lines / 2.f) + i };
         DrawThickLine3D(startPos, endPos, thickness, _color);
     }
 
-    for (f32 i = 0; i < _grid->m_columns + 1; ++i)
+    for (f32 i = 0; i < _grid.m_columns + 1; ++i)
     {
-        const Vector3 startPos = { .x = (-_grid->m_columns / 2.f) + i, .y = 0.f, .z = -_grid->m_lines / 2.f };
-        const Vector3 endPos = { .x = (-_grid->m_columns / 2.f) + i, .y = 0.f, .z = _grid->m_lines / 2.f };
+        const Vector3 startPos = { .x = (-_grid.m_columns / 2.f) + i, .y = 0.f, .z = -_grid.m_lines / 2.f };
+        const Vector3 endPos = { .x = (-_grid.m_columns / 2.f) + i, .y = 0.f, .z = _grid.m_lines / 2.f };
         DrawThickLine3D(startPos, endPos, thickness, _color);
     }
 
@@ -121,12 +148,12 @@ void GridRender(Grid* _grid, const Camera _gameCamera, const Shader _shaderRadia
         if (cellOvered.m_x == IndexInvalid || cellOvered.m_y == IndexInvalid)
             return;
 
-        const f32 left = -_grid->m_columns / 2.f + (f32)cellOvered.m_x;
+        const f32 left = -_grid.m_columns / 2.f + (f32)cellOvered.m_x;
         const f32 right = left + 1.f;
-        const f32 bottom = -_grid->m_lines / 2.f + (f32)cellOvered.m_y;
+        const f32 bottom = -_grid.m_lines / 2.f + (f32)cellOvered.m_y;
         const f32 top = bottom + 1.f;
 
-        const Color highlightColor = BLUE;
+        const Color highlightColor = RED;
 
         // Bottom line
         const Vector3 bottomStart = {.x = left, .y = 0.f, .z = bottom };
