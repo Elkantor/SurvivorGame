@@ -12,6 +12,20 @@ typedef struct Grid
     f32 m_columns;
 } Grid;
 
+bool GridBoundsCheck(const Grid _grid, const vec2u32 _cell)
+{
+    if (_cell.m_x > _grid.m_columns)
+        return false;
+    else if (_cell.m_x < 0)
+        return false;
+    else if (_cell.m_y > _grid.m_lines)
+        return false;
+    else if (_cell.m_y < 0)
+        return false;
+
+    return true;
+}
+
 vec2u32 GridIndexFromWorldPos(const Grid _grid, const Vector3 _worldPos)
 {
     const Vector3 point =

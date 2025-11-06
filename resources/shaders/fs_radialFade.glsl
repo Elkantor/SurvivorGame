@@ -30,12 +30,8 @@ void main()
     float globalAlpha = 1.0 / (1.0 + easeInExpo(distToCenter / distScale));
 
     float distFragToCenter = distance(fragPosition, center);
-    float alphaToCenter = 1.0 / (1.0 + easeInCirc(distFragToCenter / distScale));
+    float alphaToCenter = 1.0 / (1.0 + easeInExpo(distFragToCenter / distScale * 1.25f));
 
     float alpha = alphaToCenter * globalAlpha * fragColor.a;
-    float r = alphaToCenter * fragColor.r;
-    float g = alphaToCenter * fragColor.g;
-    float b = alphaToCenter * fragColor.b;
-
-    finalColor = vec4(r, g, b, alpha);
+    finalColor = vec4(fragColor.rgb, alpha);
 }

@@ -59,3 +59,24 @@ Matrix Utils3DCreateTransform(const Vector3 _pos, const Vector3 _rotation, const
 
     return transform;
 }
+
+Vector3 Utils3DVector3Lerp(const Vector3 _start, const Vector3 _end, const f32 _t)
+{
+    f32 realT = _t;
+
+    if (realT < 0.0f)
+    {
+        realT = 0.0f;
+    }
+    else if (realT > 1.0f)
+    {
+        realT = 1.0f;
+    }
+
+    return (Vector3) 
+    {
+        .x = _start.x + (_end.x - _start.x) * realT,
+        .y = _start.y + (_end.y - _start.y) * realT,
+        .z = _start.z + (_end.z - _start.z) * realT
+    };
+}

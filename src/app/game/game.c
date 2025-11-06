@@ -26,7 +26,9 @@ void GameInit(Game* _game)
 {
     memset(_game, 0, sizeof(Game));
 
-    SceneInit(&_game->m_scene);
+    const Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
+    SceneInit(&_game->m_scene, grid);
+
     _game->m_globalFont = LoadFontEx("resources/fonts/aclonica-v25-latin/aclonica-v25-latin-regular.ttf", 24, NULL, 167);
     RenderTexture3DInit(&_game->m_passColorPicker);
     _game->m_passShadowMap = LoadShadowMap(2048, 2048);
@@ -45,7 +47,9 @@ void GameUpdate(Game* _game, const f32 _dt)
         GameCameraUpdate(&_game->m_camera, _dt);
     }
 
-    SceneUpdate(&_game->m_scene, _game->m_camera.m_cam, _dt);
+    const Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
+
+    SceneUpdate(&_game->m_scene, _game->m_camera.m_cam, grid, _dt);
     UpdateCamera(&_game->m_camera.m_cam, _game->m_camera.m_cam.projection);
 
     ConsoleUpdate(&_game->m_console, _dt);
@@ -95,7 +99,7 @@ void GameRender(Game* _game)
         BeginMode3D(_game->m_camera.m_cam);
         {
             SceneRender(&_game->m_scene, _game->m_camera.m_cam, grid, cellOvered);
-            GridRender(grid, _game->m_camera.m_cam, _game->m_shaderRadialFade, WHITE);
+            GridRender(grid, _game->m_camera.m_cam, _game->m_shaderRadialFade, (Color) { 180, 180, 180, 255 });
         }
         EndMode3D();
 
