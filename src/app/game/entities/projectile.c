@@ -49,7 +49,7 @@ void ProjectileUpdate(Projectile* _projectile, const f32 _dt)
 	TimerUpdate(&_projectile->m_animTimer, _dt);
 	const f32 t = 1.f - (_projectile->m_animTimer.m_time / k_projectileAnimDuration);
 
-	const Vector3 newPos = Utils3DVector3Lerp(_projectile->m_startPos, _projectile->m_targetPos, t);
+	const Vector3 newPos = Utils3DVector3Lerp(_projectile->m_startPos, _projectile->m_targetPos, EaseOutQuart(t));
 	const Vector3 rotation = Utils3DGetRotation(_projectile->m_model.transform);
 	const Vector3 scale = Utils3DGetScale(_projectile->m_model.transform);
 
