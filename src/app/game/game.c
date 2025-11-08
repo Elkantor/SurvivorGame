@@ -12,6 +12,8 @@ typedef struct Game
     GameCamera m_camera;
     
     Shader m_shaderRadialFade;
+    ShaderFlatColor m_shaderFlatColor;
+    ShaderOutline m_shaderOutline;
 
     HUD m_hud;
     f32 m_gold;
@@ -35,6 +37,9 @@ void GameInit(Game* _game)
     GameCameraInit(&_game->m_camera);
 
     _game->m_shaderRadialFade = LoadShader("resources/shaders/vs_radialFade.glsl", "resources/shaders/fs_radialFade.glsl");
+    ShaderFlatColorInit(&_game->m_shaderFlatColor);
+    ShaderOutlineInit(&_game->m_shaderOutline);
+
     _game->m_gold = 0;
 }
 
@@ -66,7 +71,7 @@ void GameRender(Game* _game)
         ClearBackground(WHITE);
         BeginMode3D(_game->m_camera.m_cam);
         {
-            SceneRenderFlat(&_game->m_scene);
+            SceneRenderFlat(&_game->m_scene, &_game->m_shaderFlatColor);
         }
         EndMode3D();
     }
@@ -89,7 +94,7 @@ void GameRender(Game* _game)
             {
                 rlSetMatrixProjection(MatProj);
                 rlSetMatrixModelview(MatView);
-                SceneRender(&_game->m_scene, _game->m_camera.m_cam, grid, cellOvered);
+                SceneRender(&_game->m_scene, &_game->m_shaderOutline, _game->m_camera.m_cam, grid, cellOvered);
             }
             EndMode3D();
         }
@@ -98,13 +103,13 @@ void GameRender(Game* _game)
         // Render 3D Models
         BeginMode3D(_game->m_camera.m_cam);
         {
-            SceneRender(&_game->m_scene, _game->m_camera.m_cam, grid, cellOvered);
+            SceneRender(&_game->m_scene, &_game->m_shaderOutline, _game->m_camera.m_cam, grid, cellOvered);
             GridRender(grid, _game->m_camera.m_cam, _game->m_shaderRadialFade, (Color) { 180, 180, 180, 255 });
         }
         EndMode3D();
 
         // Outline pass
-        BeginShaderMode(_game->m_scene.m_shaderOutline.m_shader);
+        BeginShaderMode(_game->m_shaderOutline.m_shader);
         {
             const f32 w = _game->m_passColorPicker.m_texture.texture.width;
             const f32 h = _game->m_passColorPicker.m_texture.texture.height;

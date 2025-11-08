@@ -14,13 +14,13 @@ typedef struct Grid
 
 bool GridBoundsCheck(const Grid _grid, const vec2u32 _cell)
 {
-    if (_cell.m_x > _grid.m_columns)
+    if (_cell.m_x == IndexInvalid)
         return false;
-    else if (_cell.m_x < 0)
+    else if (_cell.m_y == IndexInvalid)
+        return false;
+    else if (_cell.m_x > _grid.m_columns)
         return false;
     else if (_cell.m_y > _grid.m_lines)
-        return false;
-    else if (_cell.m_y < 0)
         return false;
 
     return true;

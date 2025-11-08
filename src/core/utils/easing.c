@@ -77,3 +77,8 @@ f32 EaseOutBounce(f32 x)
 		return n1 * x * x + 0.984375f;
 	}
 }
+
+f32 EaseCosH(const f32 _t)
+{
+	return (cosh(_t - 0.5)) * 7.835392328 - 7.835392328;
+}

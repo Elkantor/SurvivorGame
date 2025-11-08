@@ -16,6 +16,7 @@ typedef struct Enemy
     vec2u32 m_cell;
     Timer m_animTimer;
     vec2u32 m_targetCell;
+    Vector3 m_scale;
     Model m_model;
 } Enemy;
 
@@ -24,6 +25,10 @@ static const f32 k_enemyMoveDuration = 0.5f;
 
 void EnemyMoveTo(Enemy* _enemy, const Dir _targetDir, const Grid _grid)
 {
+    if (TimerIsStarted(&_enemy->m_animTimer))
+        return;
+
+    _enemy->m_scale = Utils3DGetScale(_enemy->m_model.transform);
     _enemy->m_targetCell = _enemy->m_cell; // Reset target cell just in case
 
     if (_targetDir == DIR_NONE)
