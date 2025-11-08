@@ -10,6 +10,8 @@ typedef struct Scene
     Building m_towers[10];
     u32 m_towersSize;
 
+    Model m_modelProjectile;
+
     RadialMenu m_menuBuildings;
 } Scene;
 
@@ -53,6 +55,9 @@ void SceneInit(Scene* _scene, const Grid _grid)
     );
     _scene->m_towersSize += 1;
 
+    const Mesh modelSphere = GenMeshSphere(0.2f, 10, 10);
+    _scene->m_modelProjectile = LoadModelFromMesh(modelSphere);
+
     RadialMenuInit(&_scene->m_menuBuildings);
 }
 
@@ -76,10 +81,23 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     {
         EnemyMoveTo(&_scene->m_enemies[0], DIR_RIGHT, _grid);
     }
+    else if (IsKeyPressed(KEY_SPACE))
+    {
+        const Vector3 pos = Utils3DGetPosition(_scene->m_towers[0].m_model.transform);
+        const Vector3 offset = (Vector3){ 0.0f, 0.0f, 0.0f };
+        const Vector3 towerWithOffset = Vector3Add(pos, offset);
+        const Vector3 targetPos = Vector3Add(towerWithOffset, (Vector3) { 0.f, 0.f, 5.f });
+        BuildingShootTo(&_scene->m_towers[0], _grid, targetPos, _scene->m_modelProjectile);
+    }
 
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         EnemyUpdate(&_scene->m_enemies[i], _grid, _dt);
+    }
+
+    for (u32 i = 0; i < _scene->m_towersSize; ++i)
+    {
+        BuildingUpdate(&_scene->m_towers[i], _dt);
     }
 }
 
