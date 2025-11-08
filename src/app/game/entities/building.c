@@ -31,7 +31,9 @@ void BuildingShootTo(Building* _building, const Grid _grid, const Vector3 _targe
     if (_building->m_projectilesSize >= sizeof(_building->m_projectiles) / sizeof(_building->m_projectiles[0]))
         return;
 
-    const Vector3 pos = Utils3DGetPosition(_building->m_model.transform);
+    Vector3 pos = Utils3DGetPosition(_building->m_model.transform);
+    pos.y += 2.f;
+
     const Vector3 rotation = (Vector3){ 0.f, 0.f, 0.f };
     const Vector3 scale = (Vector3){ 1.f, 1.f, 1.f };
 

@@ -55,7 +55,7 @@ void SceneInit(Scene* _scene, const Grid _grid)
     );
     _scene->m_towersSize += 1;
 
-    const Mesh modelSphere = GenMeshSphere(0.2f, 10, 10);
+    const Mesh modelSphere = GenMeshSphere(0.1f, 10, 10);
     _scene->m_modelProjectile = LoadModelFromMesh(modelSphere);
 
     RadialMenuInit(&_scene->m_menuBuildings);
@@ -83,10 +83,10 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     }
     else if (IsKeyPressed(KEY_SPACE))
     {
-        const Vector3 pos = Utils3DGetPosition(_scene->m_towers[0].m_model.transform);
-        const Vector3 offset = (Vector3){ 0.0f, 0.0f, 0.0f };
-        const Vector3 towerWithOffset = Vector3Add(pos, offset);
-        const Vector3 targetPos = Vector3Add(towerWithOffset, (Vector3) { 0.f, 0.f, 5.f });
+        /*const Vector3 pos = Utils3DGetPosition(_scene->m_towers[0].m_model.transform);
+        const Vector3 offset = (Vector3){ 0.0f, 0.0f, 0.0f };*/
+        const Vector3 enemyPos = Utils3DGetPosition(_scene->m_enemies[0].m_model.transform);
+        const Vector3 targetPos = enemyPos;
         BuildingShootTo(&_scene->m_towers[0], _grid, targetPos, _scene->m_modelProjectile);
     }
 

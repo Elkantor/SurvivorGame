@@ -19,6 +19,7 @@ void ProjectileInit(Projectile* _projectile, const Model _model, const Vector3 _
 		_projectile->m_model = _model;
 	}
 
+	_projectile->m_startPos = _pos;
 	_projectile->m_targetPos = _pos;
 	_projectile->m_model.transform = Utils3DCreateTransform(_pos, _rotation, _scale);
 }
