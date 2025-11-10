@@ -42,7 +42,7 @@ void GameInit(Game* _game)
     ShaderFlatColorInit(&_game->m_shaderFlatColor);
     ShaderOutlineInit(&_game->m_shaderOutline);
     ShaderShadowInit(&_game->m_shaderShadow);
-    ShaderLighting(&_game->m_shaderLighting);
+    ShaderLightingInit(&_game->m_shaderLighting);
 
     _game->m_gold = 0;
 }
@@ -91,7 +91,7 @@ void GameRender(Game* _game)
             rlClearScreenBuffers(); // Force clearing depth
 
             const Vector3 LightPos = { -1.0f, 5.0f, -1.0f };
-            const Matrix MatProj = MatrixOrtho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 20.0f);  // Ajustez bounds au size de scène
+            const Matrix MatProj = MatrixOrtho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 20.0f);  // Ajustez bounds au size de scï¿½ne
             const Matrix MatView = MatrixLookAt(LightPos, (Vector3) { 0.0f, 0.0f, 0.0f }, (Vector3) { 0.0f, 1.0f, 0.0f });
 
             BeginMode3D(_game->m_camera.m_cam);

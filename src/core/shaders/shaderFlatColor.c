@@ -11,7 +11,7 @@ typedef struct ShaderFlatColor
 
 void ShaderFlatColorInit(ShaderFlatColor* _shaderFlat)
 {
-	_shaderFlat->m_shader = LoadShader(NULL, "./resources/shaders/flatColor.fs");
+	_shaderFlat->m_shader = LoadShader(NULL, "./resources/shaders/fs_flatColor.glsl");
 	_shaderFlat->m_locColor = GetShaderLocation(_shaderFlat->m_shader, "color");
 }
 
