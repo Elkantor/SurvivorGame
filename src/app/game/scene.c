@@ -17,6 +17,7 @@ typedef struct Scene
 
 void SceneInit(Scene* _scene, const Grid _grid)
 {
+    // NOTE(Elkantor): TMP code to handle basic shape for enemy
     {
         const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
         _scene->m_enemies[0].m_cell = (vec2u32){ (u32)(_grid.m_columns / 2.f) - 3, (u32)(_grid.m_lines / 2.f) };

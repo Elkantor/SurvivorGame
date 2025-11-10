@@ -14,7 +14,7 @@ typedef struct ShaderBasicColor
 
 void ShaderBasicColorInit(ShaderBasicColor* _shaderBasicColor)
 {
-	_shaderBasicColor->m_shader = LoadShader("./resources/fs_basicColor.glsl", "./resources/vs_basicColor.glsl");
+	_shaderBasicColor->m_shader = LoadShader("./resources/shaders/fs_basicColor.glsl", "./resources/shaders/vs_basicColor.glsl");
 	_shaderBasicColor->m_specularity = GetShaderLocation(_shaderBasicColor->m_shader, "specularity");
 	_shaderBasicColor->m_glosiness = GetShaderLocation(_shaderBasicColor->m_shader, "glossiness");
 	_shaderBasicColor->m_camClipNear = GetShaderLocation(_shaderBasicColor->m_shader, "camClipNear");

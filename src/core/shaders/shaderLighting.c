@@ -26,7 +26,7 @@ typedef struct ShaderLighting
 
 void ShaderLightingInit(ShaderLighting* _shaderLighting)
 {
-    _shaderLighting->m_shader = LoadShader("./resources/vs_post.glsl", "./resources/fs_lighting.glsl");
+    _shaderLighting->m_shader = LoadShader("./resources/shaders/vs_post.glsl", "./resources/shaders/fs_lighting.glsl");
     _shaderLighting->m_gBufferColor = GetShaderLocation(_shaderLighting->m_shader, "gbufferColor");
     _shaderLighting->m_gBufferNormal = GetShaderLocation(_shaderLighting->m_shader, "gbufferNormal");
     _shaderLighting->m_gBufferDepth = GetShaderLocation(_shaderLighting->m_shader, "gbufferDepth");
