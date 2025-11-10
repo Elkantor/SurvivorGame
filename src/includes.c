@@ -15,6 +15,7 @@
 #include "core/shaders/shaderFlatColor.c"
 #include "core/shaders/shaderOutline.c"
 #include "core/shaders/shaderShadow.c"
+#include "core/shaders/shaderLighting.c"
 #include "core/ui/radialMenu.c"
 #include "core/ui/console.c"
 

@@ -14,6 +14,8 @@ typedef struct Game
     Shader m_shaderRadialFade;
     ShaderFlatColor m_shaderFlatColor;
     ShaderOutline m_shaderOutline;
+    ShaderShadow m_shaderShadow;
+    ShaderLighting m_shaderLighting;
 
     HUD m_hud;
     f32 m_gold;
@@ -39,6 +41,8 @@ void GameInit(Game* _game)
     _game->m_shaderRadialFade = LoadShader("resources/shaders/vs_radialFade.glsl", "resources/shaders/fs_radialFade.glsl");
     ShaderFlatColorInit(&_game->m_shaderFlatColor);
     ShaderOutlineInit(&_game->m_shaderOutline);
+    ShaderShadowInit(&_game->m_shaderShadow);
+    ShaderLighting(&_game->m_shaderLighting);
 
     _game->m_gold = 0;
 }
