@@ -16,6 +16,11 @@ typedef struct Game
     ShaderOutline m_shaderOutline;
     ShaderShadow m_shaderShadow;
     ShaderLighting m_shaderLighting;
+    ShaderBlur m_shaderBlur;
+    ShaderSSAO m_shaderSSAO;
+    ShaderBasicColor m_shaderBasicColor;
+
+    ShadowLight m_shadowLight;
 
     HUD m_hud;
     f32 m_gold;
@@ -43,6 +48,11 @@ void GameInit(Game* _game)
     ShaderOutlineInit(&_game->m_shaderOutline);
     ShaderShadowInit(&_game->m_shaderShadow);
     ShaderLightingInit(&_game->m_shaderLighting);
+    ShaderBlurInit(&_game->m_shaderBlur);
+    ShaderSSAOInit(&_game->m_shaderSSAO);
+    ShaderBasicColorInit(&_game->m_shaderBasicColor);
+
+    ShadowLightInit(&_game->m_shadowLight);
 
     _game->m_gold = 0;
 }
