@@ -1,10 +1,15 @@
-#version 300 es
+#version 330
+precision highp float;
 
-in vec3 vertexPosition;
+uniform float lightClipNear;
+uniform float lightClipFar;
 
-uniform mat4 mvp;
+float LinearDepth(float depth, float near, float far)
+{
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
 
 void main()
 {
-    gl_Position = mvp * vec4(vertexPosition, 1.0f);
+    gl_FragDepth = LinearDepth(gl_FragCoord.z, lightClipNear, lightClipFar);
 }
