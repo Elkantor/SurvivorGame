@@ -16,30 +16,30 @@ typedef struct GBuffer
 GBuffer LoadGBuffer(const i32 _width, const i32 _height)
 {
     GBuffer target = { 0 };
-    target.id = rlLoadFramebuffer();
+    target.m_id = rlLoadFramebuffer();
 
-    rlEnableFramebuffer(target.id);
+    rlEnableFramebuffer(target.m_id);
 
-    target.color.id = rlLoadTexture(NULL, _width, _height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-    target.color.width = width;
-    target.color.height = height;
-    target.color.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-    target.color.mipmaps = 1;
-    rlFramebufferAttach(target.id, target.color.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
+    target.m_color.id = rlLoadTexture(NULL, _width, _height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+    target.m_color.width = _width;
+    target.m_color.height = _height;
+    target.m_color.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+    target.m_color.mipmaps = 1;
+    rlFramebufferAttach(target.m_id, target.m_color.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
 
-    target.normal.id = rlLoadTexture(NULL, _width, _height, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, 1);
-    target.normal.width = width;
-    target.normal.height = height;
-    target.normal.format = PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
-    target.normal.mipmaps = 1;
-    rlFramebufferAttach(target.id, target.normal.id, RL_ATTACHMENT_COLOR_CHANNEL1, RL_ATTACHMENT_TEXTURE2D, 0);
+    target.m_normal.id = rlLoadTexture(NULL, _width, _height, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, 1);
+    target.m_normal.width = _width;
+    target.m_normal.height = _height;
+    target.m_normal.format = PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
+    target.m_normal.mipmaps = 1;
+    rlFramebufferAttach(target.m_id, target.m_normal.id, RL_ATTACHMENT_COLOR_CHANNEL1, RL_ATTACHMENT_TEXTURE2D, 0);
 
-    target.depth.id = rlLoadTextureDepth(_width, _height, false);
-    target.depth.width = _width;
-    target.depth.height = height;
-    target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
-    target.depth.mipmaps = 1;
-    rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
+    target.m_depth.id = rlLoadTextureDepth(_width, _height, false);
+    target.m_depth.width = _width;
+    target.m_depth.height = _height;
+    target.m_depth.format = 19;       //DEPTH_COMPONENT_24BIT?
+    target.m_depth.mipmaps = 1;
+    rlFramebufferAttach(target.m_id, target.m_depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
 
     rlDisableFramebuffer();
 
@@ -48,9 +48,9 @@ GBuffer LoadGBuffer(const i32 _width, const i32 _height)
 
 void UnloadGBuffer(GBuffer _target)
 {
-    if (_target.id > 0)
+    if (_target.m_id > 0)
     {
-        rlUnloadFramebuffer(_target.id);
+        rlUnloadFramebuffer(_target.m_id);
     }
 }
 
@@ -58,13 +58,13 @@ void BeginGBuffer(GBuffer _target, Camera3D _camera)
 {
     rlDrawRenderBatchActive();      // Update and draw internal render batch
 
-    rlEnableFramebuffer(_target.id); // Enable render target
+    rlEnableFramebuffer(_target.m_id); // Enable render target
     rlActiveDrawBuffers(2);
 
     // Set viewport and RLGL internal framebuffer size
-    rlViewport(0, 0, _target.color.width, _target.color.height);
-    rlSetFramebufferWidth(_target.color.width);
-    rlSetFramebufferHeight(_target.color.height);
+    rlViewport(0, 0, _target.m_color.width, _target.m_color.height);
+    rlSetFramebufferWidth(_target.m_color.width);
+    rlSetFramebufferHeight(_target.m_color.height);
 
     ClearBackground(BLACK);
 
@@ -72,7 +72,7 @@ void BeginGBuffer(GBuffer _target, Camera3D _camera)
     rlPushMatrix();                 // Save previous matrix, which contains the settings for the 2d ortho projection
     rlLoadIdentity();               // Reset current matrix (projection)
 
-    f32 aspect = (f32)_target.color.width / (f32)_target.color.height;
+    f32 aspect = (f32)_target.m_color.width / (f32)_target.m_color.height;
 
     // NOTE: zNear and zFar values are important when computing depth buffer values
     if (_camera.projection == CAMERA_PERSPECTIVE)

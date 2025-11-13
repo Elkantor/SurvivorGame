@@ -113,7 +113,7 @@ void SetShaderValueShadowMap(Shader shader, int locIndex, RenderTexture2D target
 
     
     rlEnableShader(shader.id);
-    int slot = 10; // Can be anything 0 to 15, but 0 will probably be taken up
+    int slot = 15; // Can be anything 0 to 15, but 0 will probably be taken up
     rlActiveTextureSlot(slot);
     rlEnableTexture(target.depth.id);
     rlSetUniform(locIndex, &slot, SHADER_UNIFORM_INT, 1);

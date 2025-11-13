@@ -18,7 +18,8 @@ void ShaderShadowInit(ShaderShadow* _shaderShadow)
     _shaderShadow->m_lightClipFarLoc = GetShaderLocation(_shaderShadow->m_shader, "lightClipFar");
 }
 
-void ShaderDhadowUpdate(ShaderShadow* _shaderShadow, const Camera _camera, const Vector3 _targetPos)
+void ShaderShadowUpdate(const ShaderShadow* _shaderShadow, const f32 _clipNear, const f32 _clipFar)
 {
-    
+    SetShaderValue(_shaderShadow->m_shader, _shaderShadow->m_lightClipNearLoc, &_clipNear, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(_shaderShadow->m_shader, _shaderShadow->m_lightClipFarLoc, &_clipFar, SHADER_UNIFORM_FLOAT);
 }
