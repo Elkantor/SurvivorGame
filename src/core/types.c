@@ -25,6 +25,7 @@ typedef struct { i32 m_x, m_y; } vec2i32;
 typedef struct { u32 m_x, m_y; } vec2u32;
 
 const u32 IndexInvalid = UINT32_MAX;
+const u8 IndexInvalidU8 = UINT8_MAX;
 
 const f32 TinyEpsilon = 1e-6f;
 

@@ -37,6 +37,8 @@ void BuildingShootTo(Building* _building, const Grid _grid, const Vector3 _targe
     const Vector3 rotation = (Vector3){ 0.f, 0.f, 0.f };
     const Vector3 scale = (Vector3){ 1.f, 1.f, 1.f };
 
+    // Look into the previous frame projectiles to check if a new one can be added
+
     ProjectileInit(&_building->m_projectiles[_building->m_projectilesSize], _projectileModel, pos, rotation, scale);
     ProjectileLaunch(&_building->m_projectiles[_building->m_projectilesSize], _targetPos);
 
@@ -65,6 +67,27 @@ void BuildingUpdate(Building* _building, const f32 _dt)
     for (u8 i = 0; i < _building->m_projectilesSize; ++i)
     {
         ProjectileUpdate(&_building->m_projectiles[i], _dt);
+    }
+
+    // Remove projectiles from last frame which are over
+    {
+        u8 i = 0;
+        u8 j = _building->m_projectilesSize;
+
+        while (i < j)
+        {
+            // Look for reseted timers
+            if (TimerIsStarted(&_building->m_projectiles[i].m_animTimer) == false)
+            {
+                _building->m_projectiles[i] = _building->m_projectiles[--j];
+            }
+            else
+            {
+                ++i;
+            }
+        }
+
+        _building->m_projectilesSize = j;
     }
 }
 

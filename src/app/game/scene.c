@@ -30,14 +30,6 @@ void SceneInit(Scene* _scene, const Grid _grid)
         _scene->m_enemiesSize += 1;
     }
 
-    /*_scene->m_enemies[1].m_model = LoadModel("resources/models/enemies/TestWalking.glb");
-    _scene->m_enemies[1].m_model.transform = Utils3DCreateTransform(
-        (Vector3) { 1.5f, 0.f, 1.5f },
-        (Vector3) { 0.f, 0.f, 0.f },
-        (Vector3) { 1.0f, 1.1f, 1.1f }
-    );
-    _scene->m_enemiesSize += 1;*/
-
     BuildingInit(
         &_scene->m_towers[0],
         "resources/models/buildings/towers/elves/ArcherTowerLvl1/ArcherTowerLvl1.obj",
@@ -84,8 +76,6 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     }
     else if (IsKeyPressed(KEY_SPACE))
     {
-        /*const Vector3 pos = Utils3DGetPosition(_scene->m_towers[0].m_model.transform);
-        const Vector3 offset = (Vector3){ 0.0f, 0.0f, 0.0f };*/
         const Vector3 enemyPos = Utils3DGetPosition(_scene->m_enemies[0].m_model.transform);
         const Vector3 targetPos = enemyPos;
         BuildingShootTo(&_scene->m_towers[0], _grid, targetPos, _scene->m_modelProjectile);
@@ -134,6 +124,17 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
 void SceneRenderUI(Scene* _scene)
 {
     RadialMenuRender(&_scene->m_menuBuildings);
+}
+
+void SceneRenderWithShader(const Scene* _scene, const Shader _shader)
+{
+    for (u16 i = 0; i < _scene->m_towersSize; ++i)
+    {
+        const Shader tmp = _scene->m_towers[i].m_model.materials[0].shader;
+        _scene->m_towers[i].m_model.materials[0].shader = _shader;
+        DrawModel(_scene->m_towers[i].m_model, (Vector3){ 0.f, 0.f, 0.f }, 1.f, WHITE);
+        _scene->m_towers[i].m_model.materials[0].shader = tmp;
+    }
 }
 
 void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
