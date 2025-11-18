@@ -10,6 +10,9 @@ typedef struct Scene
     Building m_towers[10];
     u32 m_towersSize;
 
+    RoadCell m_roadCells[50];
+    u32 m_roadCellsSize;
+
     Model m_modelProjectile;
 
     RadialMenu m_menuBuildings;
@@ -58,7 +61,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
 {
     RadialMenuUpdate(&_scene->m_menuBuildings, _dt);
 
-    if (IsKeyPressed(KEY_DOWN))
+    /*if (IsKeyPressed(KEY_DOWN))
     {
         EnemyMoveTo(&_scene->m_enemies[0], DIR_UP, _grid);
     }
@@ -74,11 +77,62 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     {
         EnemyMoveTo(&_scene->m_enemies[0], DIR_RIGHT, _grid);
     }
-    else if (IsKeyPressed(KEY_SPACE))
+    else*/ if (IsKeyPressed(KEY_ENTER))
     {
         const Vector3 enemyPos = Utils3DGetPosition(_scene->m_enemies[0].m_model.transform);
         const Vector3 targetPos = enemyPos;
         BuildingShootTo(&_scene->m_towers[0], _grid, targetPos, _scene->m_modelProjectile);
+    }
+
+    const KeyboardKey keyPressed = GetKeyPressed();
+    const vec2u32 cellOvered = GridSelect(_grid, GetMousePosition(), _gameCam);
+
+    if (keyPressed == KEY_UP || keyPressed == KEY_DOWN || keyPressed == KEY_RIGHT || keyPressed == KEY_LEFT)
+    {
+        u32 foundIndex = IndexInvalid;
+
+        for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
+        {
+            if (RoadCellExistsAt(&_scene->m_roadCells[i], _grid, cellOvered))
+            {
+                foundIndex = i;
+                break;
+            }
+        }
+
+        const u32 capacity = sizeof(_scene->m_roadCells) / sizeof(_scene->m_roadCells[0]);
+
+        if (foundIndex != IndexInvalid)
+        {
+            RoadCellUpdate(&_scene->m_roadCells[foundIndex], keyPressed);
+        }
+        else if (_scene->m_roadCellsSize < capacity)
+        {
+            RoadCellInit(&_scene->m_roadCells[_scene->m_roadCellsSize]);
+            RoadCellUpdate(&_scene->m_roadCells[_scene->m_roadCellsSize], keyPressed);
+            _scene->m_roadCells[_scene->m_roadCellsSize].m_cell = cellOvered;
+            _scene->m_roadCellsSize += 1;
+
+        }
+    }
+    else if (keyPressed == KEY_DELETE)
+    {
+        u32 foundIndex = IndexInvalid;
+
+        for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
+        {
+            if (RoadCellExistsAt(&_scene->m_roadCells[i], _grid, cellOvered))
+            {
+                foundIndex = i;
+                break;
+            }
+        }
+
+        if (foundIndex != IndexInvalid)
+        {
+            _scene->m_roadCells[foundIndex] = _scene->m_roadCells[_scene->m_roadCellsSize - 1];
+            _scene->m_roadCellsSize -= 1;
+        }
     }
 
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
@@ -118,6 +172,11 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         DrawModel(_scene->m_enemies[i].m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, WHITE);
+    }
+
+    for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
+    {
+        RoadCellRender(&_scene->m_roadCells[i], _grid);   
     }
 }
 

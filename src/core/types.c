@@ -21,8 +21,8 @@ typedef u16 id;
 
 typedef f32 percent; //NOTE(VictorGallet): Goes from 0.0 to 1.0 for [0%-100%]
 
-typedef struct { i32 m_x, m_y; } vec2i32;
-typedef struct { u32 m_x, m_y; } vec2u32;
+typedef struct vec2i32 { i32 m_x, m_y; } vec2i32;
+typedef struct vec2u32 { u32 m_x, m_y; } vec2u32;
 
 const u32 IndexInvalid = UINT32_MAX;
 const u8 IndexInvalidU8 = UINT8_MAX;
@@ -41,3 +41,12 @@ void convertUint16ToFloat3Array(u16 _input, f32 _output[3])
 	_output[1] = (f32)((_input >> 8) & 0xFF);
 	_output[2] = (f32)((_input >> 4) & 0xFF);
 }
+
+typedef enum Dir
+{
+    DIR_UP = 0,
+    DIR_DOWN = 1,
+    DIR_LEFT = 2,
+    DIR_RIGHT = 3,
+    DIR_NONE
+} Dir;
