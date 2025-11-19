@@ -14,24 +14,34 @@ typedef struct Scene
     u32 m_roadCellsSize;
 
     Model m_modelProjectile;
+    Model m_modelEnemy;
 
     RadialMenu m_menuBuildings;
 } Scene;
 
+void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
+{
+    const u32 capacity = sizeof(_scene->m_enemies) / sizeof(_scene->m_enemies[0]);
+
+    if (_scene->m_enemiesSize >= capacity)
+        return;
+
+    if (GridBoundsCheck(_grid, _spawnCell) == false)
+        return;
+
+    const u32 index = _scene->m_enemiesSize;
+    Vector3 position = GridWorldPosFromIndex(_grid, _spawnCell);
+    position.y += 0.25f;
+
+    EnemyInit(&_scene->m_enemies[index], _scene->m_modelEnemy, _grid, position);
+
+    _scene->m_enemiesSize += 1;
+}
+
 void SceneInit(Scene* _scene, const Grid _grid)
 {
-    // NOTE(Elkantor): TMP code to handle basic shape for enemy
-    {
-        const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
-        _scene->m_enemies[0].m_cell = (vec2u32){ (u32)(_grid.m_columns / 2.f) - 3, (u32)(_grid.m_lines / 2.f) };
-        const Vector3 scale = { 1.f, 1.f, 1.f };
-        const Vector3 rotation = { 0.f, 0.f, 0.f };
-        Vector3 position = GridWorldPosFromIndex(_grid, _scene->m_enemies[0].m_cell);
-        position.y += 0.25f;
-        _scene->m_enemies[0].m_model = LoadModelFromMesh(cylinder);
-        _scene->m_enemies[0].m_model.transform = Utils3DCreateTransform(position, rotation, scale);
-        _scene->m_enemiesSize += 1;
-    }
+    const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
+    _scene->m_modelEnemy = LoadModelFromMesh(cylinder);
 
     BuildingInit(
         &_scene->m_towers[0],
@@ -60,6 +70,7 @@ void SceneInit(Scene* _scene, const Grid _grid)
 void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f32 _dt)
 {
     RadialMenuUpdate(&_scene->m_menuBuildings, _dt);
+    const vec2u32 cellOvered = GridSelect(_grid, GetMousePosition(), _gameCam);
 
     /*if (IsKeyPressed(KEY_DOWN))
     {
@@ -77,15 +88,18 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     {
         EnemyMoveTo(&_scene->m_enemies[0], DIR_RIGHT, _grid);
     }
-    else*/ if (IsKeyPressed(KEY_ENTER))
+    else*/ if (IsKeyDown(KEY_ENTER))
     {
         const Vector3 enemyPos = Utils3DGetPosition(_scene->m_enemies[0].m_model.transform);
         const Vector3 targetPos = enemyPos;
         BuildingShootTo(&_scene->m_towers[0], _grid, targetPos, _scene->m_modelProjectile);
     }
+    else if (IsKeyPressed(KEY_P))
+    {
+        SceneSpawnEnemy(_scene, _grid, cellOvered);
+    }
 
     const KeyboardKey keyPressed = GetKeyPressed();
-    const vec2u32 cellOvered = GridSelect(_grid, GetMousePosition(), _gameCam);
 
     if (keyPressed == KEY_UP || keyPressed == KEY_DOWN || keyPressed == KEY_RIGHT || keyPressed == KEY_LEFT)
     {
@@ -138,6 +152,23 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         EnemyUpdate(&_scene->m_enemies[i], _grid, _dt);
+
+        const vec2u32 cell = _scene->m_enemies[i].m_cell;
+        u32 foundIndex = IndexInvalid;
+
+        for (u32 j = 0; j < _scene->m_roadCellsSize; ++j)
+        {
+            if (RoadCellExistsAt(&_scene->m_roadCells[j], _grid, cell))
+            {
+                foundIndex = j;
+                break;
+            }
+        }
+
+        if (foundIndex != IndexInvalid)
+        {
+            EnemyMoveTo(&_scene->m_enemies[i], _scene->m_roadCells[foundIndex].m_dir, _grid);
+        }
     }
 
     for (u32 i = 0; i < _scene->m_towersSize; ++i)
@@ -176,7 +207,7 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
 
     for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
     {
-        RoadCellRender(&_scene->m_roadCells[i], _grid);   
+        RoadCellRender(&_scene->m_roadCells[i], _grid);
     }
 }
 

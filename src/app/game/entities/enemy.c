@@ -14,6 +14,19 @@ typedef struct Enemy
 
 static const f32 k_enemyMoveDuration = 0.5f;
 
+void EnemyInit(Enemy* _enemy, const Model _model, const Grid _grid, const Vector3 _pos)
+{
+    _enemy->m_cell = GridIndexFromWorldPos(_grid, _pos);
+    _enemy->m_model = _model;
+
+    const Vector3 scale = { 1.f, 1.f, 1.f };
+    const Vector3 rotation = { 0.f, 0.f, 0.f };
+    _enemy->m_model.transform = Utils3DCreateTransform(_pos, rotation, scale);
+
+    _enemy->m_targetCell = _enemy->m_cell;
+    _enemy->m_animTimer = TimerInit(0.f);
+}
+
 void EnemyMoveTo(Enemy* _enemy, const Dir _targetDir, const Grid _grid)
 {
     if (TimerIsStarted(&_enemy->m_animTimer))
@@ -33,8 +46,8 @@ void EnemyMoveTo(Enemy* _enemy, const Dir _targetDir, const Grid _grid)
 
     const vec2u32 additionalCell[4] =
     {
-        [DIR_UP] = { 0, 1 },
-        [DIR_DOWN] = { 0, -1 },
+        [DIR_UP] = { 0, -1 },
+        [DIR_DOWN] = { 0, 1 },
         [DIR_LEFT] = { -1, 0 },
         [DIR_RIGHT] = { 1, 0 },
     };

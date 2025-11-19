@@ -27,6 +27,9 @@ void BuildingShootTo(Building* _building, const Grid _grid, const Vector3 _targe
     if (TimerIsStarted(&_building->m_animTimerShoot))
         return;
 
+    _building->m_animTimerShoot = TimerInit(k_buildingShootDuration);
+    TimerStart(&_building->m_animTimerShoot);
+
     // Create Projectile only if it can
     if (_building->m_projectilesSize >= sizeof(_building->m_projectiles) / sizeof(_building->m_projectiles[0]))
         return;
