@@ -13,8 +13,10 @@ typedef struct Scene
     RoadCell m_roadCells[50];
     u32 m_roadCellsSize;
 
-    Model m_modelProjectile;
     Model m_modelEnemy;
+    Model m_modelTowerArcher1;
+    Model m_modelTowerWizard1;
+    Model m_modelProjectile;
 
     RadialMenu m_menuBuildings;
 } Scene;
@@ -43,18 +45,21 @@ void SceneInit(Scene* _scene, const Grid _grid)
     const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
     _scene->m_modelEnemy = LoadModelFromMesh(cylinder);
 
+
+    _scene->m_modelTowerArcher1 = LoadModel("resources/models/buildings/towers/elves/ArcherTowerLvl1/ArcherTowerLvl1.obj");
     BuildingInit(
         &_scene->m_towers[0],
-        "resources/models/buildings/towers/elves/ArcherTowerLvl1/ArcherTowerLvl1.obj",
+        _scene->m_modelTowerArcher1,
         (Vector3) { 0.5f, 0.f, 0.5f },
         (Vector3) { 0.f, 0.f, 0.f },
         (Vector3) { 0.2f, 0.2f, 0.2f }
     );
     _scene->m_towersSize += 1;
 
+    _scene->m_modelTowerWizard1 = LoadModel("resources/models/buildings/towers/elves/WizardTowerLvl1/WizardTowerLvl1.obj");
     BuildingInit(
         &_scene->m_towers[1],
-        "resources/models/buildings/towers/elves/WizardTowerLvl1/WizardTowerLvl1.obj",
+        _scene->m_modelTowerWizard1,
         (Vector3) { 2.5f, 0.f, 0.5f },
         (Vector3) { 0.f, 0.f, 0.f },
         (Vector3) { 0.2f, 0.2f, 0.2f }

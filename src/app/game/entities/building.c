@@ -12,9 +12,9 @@ typedef struct Building
     vec2u32 m_cell;
 } Building;
 
-void BuildingInit(Building* _building, const char* _modelPath, const Vector3 _pos, const Vector3 _rotation, const Vector3 _scale)
+void BuildingInit(Building* _building, const Model _model, const Vector3 _pos, const Vector3 _rotation, const Vector3 _scale)
 {
-    _building->m_model = LoadModel(_modelPath);
+    _building->m_model = _model;
     _building->m_model.transform = Utils3DCreateTransform(_pos, _rotation, _scale);
 
     _building->m_projectilesSize = 0;
@@ -39,8 +39,6 @@ void BuildingShootTo(Building* _building, const Grid _grid, const Vector3 _targe
 
     const Vector3 rotation = (Vector3){ 0.f, 0.f, 0.f };
     const Vector3 scale = (Vector3){ 1.f, 1.f, 1.f };
-
-    // Look into the previous frame projectiles to check if a new one can be added
 
     ProjectileInit(&_building->m_projectiles[_building->m_projectilesSize], _projectileModel, pos, rotation, scale);
     ProjectileLaunch(&_building->m_projectiles[_building->m_projectilesSize], _targetPos);
