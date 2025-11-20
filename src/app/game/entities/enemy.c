@@ -27,6 +27,40 @@ void EnemyInit(Enemy* _enemy, const Model _model, const Grid _grid, const Vector
     _enemy->m_animTimer = TimerInit(0.f);
 }
 
+bool EnemySave(const Enemy* _enemy, binn* _binn)
+{
+    bool ret = true;
+
+    ret &= binn_object_set_uint32(_binn, "x", _enemy->m_cell.m_x);
+    ret &= binn_object_set_uint32(_binn, "y", _enemy->m_cell.m_y);
+    ret &= binn_object_set_float(_binn, "t", _enemy->m_animTimer.m_time);
+    ret &= binn_object_set_bool(_binn, "tf", _enemy->m_animTimer.m_finished);
+    ret &= binn_object_set_bool(_binn, "tp", _enemy->m_animTimer.m_paused);
+    ret &= binn_object_set_bool(_binn, "ts", _enemy->m_animTimer.m_started);
+    ret &= binn_object_set_uint32(_binn, "tx", _enemy->m_targetCell.m_x);
+    ret &= binn_object_set_uint32(_binn, "ty", _enemy->m_targetCell.m_y);
+    ret &= binn_object_set_float(_binn, "sx", _enemy->m_scale.x);
+    ret &= binn_object_set_float(_binn, "sy", _enemy->m_scale.y);
+    ret &= binn_object_set_float(_binn, "sz", _enemy->m_scale.z);
+
+    return ret;
+}
+
+void EnemyLoad(Enemy* _enemy, const binn* _binn)
+{
+    _enemy->m_cell.m_x = binn_object_uint32(_binn, "x");
+    _enemy->m_cell.m_y = binn_object_uint32(_binn, "y");
+    _enemy->m_animTimer.m_time = binn_object_float(_binn, "t");
+    _enemy->m_animTimer.m_finished = binn_object_bool(_binn, "tf");
+    _enemy->m_animTimer.m_paused = binn_object_bool(_binn, "tp");
+    _enemy->m_animTimer.m_started = binn_object_bool(_binn, "ts");
+    _enemy->m_targetCell.m_x = binn_object_uint32(_binn, "tx");
+    _enemy->m_targetCell.m_y = binn_object_uint32(_binn, "ty");
+    _enemy->m_scale.x = binn_object_float(_binn, "sx");
+    _enemy->m_scale.y = binn_object_float(_binn, "sy");
+    _enemy->m_scale.z = binn_object_float(_binn, "sz");
+}
+
 void EnemyMoveTo(Enemy* _enemy, const Dir _targetDir, const Grid _grid)
 {
     if (TimerIsStarted(&_enemy->m_animTimer))

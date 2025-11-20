@@ -42,7 +42,7 @@ void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
 
 void SceneSave(const Scene* _scene)
 {
-    u8 buff[CHUNK_SIZE] = { 0 };
+    u8 buff[204800] = { 0 };
     binn obj = { 0 };
 
     bool success = true;
@@ -51,7 +51,7 @@ void SceneSave(const Scene* _scene)
     {
         // Road Cells
         {
-            u8 buffList[CHUNK_SIZE] = { 0 };
+            u8 buffList[CHUNK_SIZE * 10] = { 0 };
             binn list = { 0 };
 
             if (binn_create(&list, BINN_LIST, sizeof(buffList), buffList))
@@ -59,11 +59,37 @@ void SceneSave(const Scene* _scene)
                 for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
                 {
                     binn item = { 0 };
-                    success &= RoadCellSave(&_scene->m_roadCells[i], &item);
+                    u8 buffItem[CHUNK_SIZE] = { 0 };
+                    if (binn_create(&item, BINN_OBJECT, sizeof(buffItem), buffItem))
+                    {
+                        success &= RoadCellSave(&_scene->m_roadCells[i], &item);
+                    }
                     binn_list_add_object(&list, &item);
                 }
 
-                binn_object_set_list(&obj, "m_roadCells", &list);
+                binn_object_set_list(&obj, "cells", &list);
+            }
+        }
+
+        // Enemies
+        {
+            u8 buffList[CHUNK_SIZE * 10] = { 0 };
+            binn list = { 0 };
+
+            if (binn_create(&list, BINN_LIST, sizeof(buffList), buffList))
+            {
+                for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
+                {
+                    binn item = { 0 };
+                    u8 buffItem[CHUNK_SIZE] = { 0 };
+                    if (binn_create(&item, BINN_OBJECT, sizeof(buffItem), buffItem))
+                    {
+                        success &= EnemySave(&_scene->m_enemies[i], &item);
+                    }
+                    binn_list_add_object(&list, &item);
+                }
+
+                binn_object_set_list(&obj, "enemies", &list);
             }
         }
     }
@@ -74,7 +100,7 @@ void SceneSave(const Scene* _scene)
     }
 }
 
-void SceneLoad(Scene* _scene)
+void SceneLoad(Scene* _scene, const Grid _grid)
 {
     i32 dataSize = 0;
     u8* data = LoadFileData("./sceneSaved.dat", &dataSize);
@@ -85,7 +111,7 @@ void SceneLoad(Scene* _scene)
         // Road Cells
         {
             binn binnList = { 0 };
-            void* list = binn_object_list(&obj, "m_roadCells");
+            void* list = binn_object_list(&obj, "cells");
             binn_load(list, &binnList);
             const u32 count = binn_count(&binnList);
 
@@ -99,6 +125,29 @@ void SceneLoad(Scene* _scene)
                 RoadCellLoad(&_scene->m_roadCells[i], &item);
             }
             _scene->m_roadCellsSize = count;
+        }
+
+        // Enemies
+        {
+            binn binnList = { 0 };
+            void* list = binn_object_list(&obj, "enemies");
+            binn_load(list, &binnList);
+            const u32 count = binn_count(&binnList);
+
+            _scene->m_enemiesSize = 0;
+            memset(&_scene->m_enemies, 0, sizeof(_scene->m_enemies) / sizeof(_scene->m_enemies[0]));
+
+            for (u32 i = 0; i < count; ++i)
+            {
+                void* itemPtr = NULL;
+                binn item = { 0 };
+                i32 itemSize = 0;
+                binn_list_get(&binnList, i + 1, BINN_OBJECT, &itemPtr, &itemSize);
+                binn_load(itemPtr, &item);
+                EnemyLoad(&_scene->m_enemies[i], &item);
+                _scene->m_enemies[i].m_model = _scene->m_modelEnemy;
+            }
+            _scene->m_enemiesSize = count;
         }
     }
 }
@@ -171,7 +220,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     }
     else if (IsKeyPressed(KEY_F8))
     {
-        SceneLoad(_scene);
+        SceneLoad(_scene, _grid);
     }
 
     const KeyboardKey keyPressed = GetKeyPressed();

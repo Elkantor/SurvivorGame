@@ -1,3 +1,13 @@
+#pragma once
+
+#define BEGIN_SERIALIZE_OBJ(BINN) \
+{\
+    u8 buff##__FILE##__LINE__[CHUNK_SIZE] = { 0 }; \
+    if (binn_create(&BINN, BINN_OBJECT, sizeof(buff##__FILE##__LINE__), buff##__FILE##__LINE__)) \
+    {\
+}
+#define END_SERIALIZE_OBJ() }
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
