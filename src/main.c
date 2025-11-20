@@ -18,6 +18,7 @@ int main(int _argc, char** _argv)
         GameRender(game);
     }
 
+    ArenaPop(&mainArena, game);
     CloseWindow();
     return 0;
 }

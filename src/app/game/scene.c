@@ -40,11 +40,73 @@ void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
     _scene->m_enemiesSize += 1;
 }
 
+void SceneSave(const Scene* _scene)
+{
+    u8 buff[CHUNK_SIZE] = { 0 };
+    binn obj = { 0 };
+
+    bool success = true;
+
+    if (binn_create(&obj, BINN_OBJECT, sizeof(buff), buff))
+    {
+        // Road Cells
+        {
+            u8 buffList[CHUNK_SIZE] = { 0 };
+            binn list = { 0 };
+
+            if (binn_create(&list, BINN_LIST, sizeof(buffList), buffList))
+            {
+                for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
+                {
+                    binn item = { 0 };
+                    success &= RoadCellSave(&_scene->m_roadCells[i], &item);
+                    binn_list_add_object(&list, &item);
+                }
+
+                binn_object_set_list(&obj, "m_roadCells", &list);
+            }
+        }
+    }
+
+    if (success)
+    {
+        SaveFileData("./sceneSaved.dat", binn_ptr(&obj), binn_size(&obj));
+    }
+}
+
+void SceneLoad(Scene* _scene)
+{
+    i32 dataSize = 0;
+    u8* data = LoadFileData("./sceneSaved.dat", &dataSize);
+    
+    binn obj = { 0 };
+    if (binn_load_ex(data, dataSize, &obj))
+    {
+        // Road Cells
+        {
+            binn binnList = { 0 };
+            void* list = binn_object_list(&obj, "m_roadCells");
+            binn_load(list, &binnList);
+            const u32 count = binn_count(&binnList);
+
+            for (u32 i = 0; i < count; ++i)
+            {
+                void* itemPtr = NULL;
+                binn item = { 0 };
+                i32 itemSize = 0;
+                binn_list_get(&binnList, i+1, BINN_OBJECT, &itemPtr, &itemSize);
+                binn_load(itemPtr, &item);
+                RoadCellLoad(&_scene->m_roadCells[i], &item);
+            }
+            _scene->m_roadCellsSize = count;
+        }
+    }
+}
+
 void SceneInit(Scene* _scene, const Grid _grid)
 {
     const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
     _scene->m_modelEnemy = LoadModelFromMesh(cylinder);
-
 
     _scene->m_modelTowerArcher1 = LoadModel("resources/models/buildings/towers/elves/ArcherTowerLvl1/ArcherTowerLvl1.obj");
     BuildingInit(
@@ -102,6 +164,14 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     else if (IsKeyPressed(KEY_P))
     {
         SceneSpawnEnemy(_scene, _grid, cellOvered);
+    }
+    else if (IsKeyPressed(KEY_F7))
+    {
+        SceneSave(_scene);
+    }
+    else if (IsKeyPressed(KEY_F8))
+    {
+        SceneLoad(_scene);
     }
 
     const KeyboardKey keyPressed = GetKeyPressed();

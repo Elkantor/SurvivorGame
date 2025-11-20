@@ -15,6 +15,31 @@ void RoadCellInit(RoadCell* _cell)
 	_cell->m_cell.m_y = IndexInvalid;
 }
 
+bool RoadCellSave(const RoadCell* _cell, binn* _binn)
+{
+	bool ret = true;
+
+	u8 buff[CHUNK_SIZE] = { 0 };
+	if (binn_create(_binn, BINN_OBJECT, sizeof(buff), buff) == false)
+	{
+		ret = false;
+		return ret;
+	}
+
+	ret &= binn_object_set_int32(_binn, "m_dir", _cell->m_dir);
+	ret &= binn_object_set_uint32(_binn, "m_cell.m_x", _cell->m_cell.m_x);
+	ret &= binn_object_set_uint32(_binn, "m_cell.m_y", _cell->m_cell.m_y);
+
+	return ret;
+}
+
+void RoadCellLoad(RoadCell* _cell, const binn* _binn)
+{
+	_cell->m_dir = (Dir)binn_object_int32(_binn, "m_dir");
+	_cell->m_cell.m_x = binn_object_uint32(_binn, "m_cell.m_x");
+	_cell->m_cell.m_y = binn_object_uint32(_binn, "m_cell.m_y");
+}
+
 bool RoadCellExistsAt(const RoadCell* _cell, const Grid _grid, const vec2u32 _gridPos)
 {
 	if (GridBoundsCheck(_grid, _cell->m_cell) == false)

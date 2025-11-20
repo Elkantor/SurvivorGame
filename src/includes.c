@@ -7,6 +7,7 @@
 #include "core/utils/arena.c"
 #include "core/utils/timer.c"
 #include "core/utils/easing.c"
+#include "core/utils/binn.c"
 #include "core/math/lines.c"
 #include "core/3D/utils3D.c"
 #include "core/3D/renderTexture3D.c"
