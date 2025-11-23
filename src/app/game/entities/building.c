@@ -92,12 +92,31 @@ void BuildingUpdate(Building* _building, const f32 _dt)
     }
 }
 
-void BuildingRender(const Building* _building)
+void BuildingRender(Building* _building, MatCap _matCap)
 {
+    const Shader tmp = _building->m_model.materials[0].shader;
+    _building->m_model.materials[0].shader = _matCap.m_shader;
+
+    MatCapUpdate(&_matCap, 0.6f, 0.99);
     DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.0f }, 1.f, WHITE);
+    _building->m_model.materials[0].shader = tmp;
 
     for (u8 i = 0; i < _building->m_projectilesSize; ++i)
     {
-        ProjectileRender(&_building->m_projectiles[i]);
+        ProjectileRender(&_building->m_projectiles[i], _matCap);
     }
+
+    // NOTE(Elkantor): Quick test to duplicate geometry to fake shadows
+    /*const Matrix transform = _building->m_model.transform;
+    Vector3 scale = Utils3DGetScale(transform);
+    scale.y += 0.1f;
+    scale.z -= 0.1f;
+    scale.x -= 0.01f;
+    Vector3 shadowRot = (Vector3){ -PI/2.f, 0.f, PI/4};
+    const Matrix shadowTransform = Utils3DCreateTransform(Utils3DGetPosition(transform), shadowRot, scale);
+    _building->m_model.transform = shadowTransform;
+    DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, BLACK);
+    _building->m_model.transform = transform;*/
+
+
 }

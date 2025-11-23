@@ -10,6 +10,7 @@ typedef struct Game
     RenderTexture3D m_passColorPicker;
     GameCamera m_camera;
     Shader m_shaderRadialFade;
+    MatCap m_matCap;
     ShaderFlatColor m_shaderFlatColor;
     ShaderOutline m_shaderOutline;
     HUD m_hud;
@@ -24,19 +25,19 @@ void GameInit(Game* _game)
 {
     memset(_game, 0, sizeof(Game));
 
-    const Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
-    SceneInit(&_game->m_scene, grid);
-
     _game->m_globalFont = LoadFontEx("resources/fonts/aclonica-v25-latin/aclonica-v25-latin-regular.ttf", 24, NULL, 167);
     RenderTexture3DInit(&_game->m_passColorPicker);
     GameCameraInit(&_game->m_camera);
 
     _game->m_shaderRadialFade = LoadShader("resources/shaders/vs_radialFade.glsl", "resources/shaders/fs_radialFade.glsl");
+    MatCapInit(&_game->m_matCap);
+
+    const Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
+    SceneInit(&_game->m_scene, grid, _game->m_matCap);
+
     ShaderFlatColorInit(&_game->m_shaderFlatColor);
     ShaderOutlineInit(&_game->m_shaderOutline);
     _game->m_gold = 0;
-
-    //rlSetClipPlanes(0.01f, 50.0f);
 }
 
 void GameUpdate(Game* _game, const f32 _dt)
@@ -80,7 +81,7 @@ void GameRender(Game* _game)
         // Render 3D Models
         BeginMode3D(_game->m_camera.m_cam);
         {
-            SceneRender(&_game->m_scene, &_game->m_shaderOutline, _game->m_camera.m_cam, grid, cellOvered);
+            SceneRender(&_game->m_scene, &_game->m_shaderOutline, _game->m_camera.m_cam, grid, cellOvered, _game->m_matCap);            
             GridRender(grid, _game->m_camera.m_cam, _game->m_shaderRadialFade, (Color) { 180, 180, 180, 255 });
         }
         EndMode3D();

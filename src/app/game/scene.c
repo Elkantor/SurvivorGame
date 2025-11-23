@@ -17,6 +17,7 @@ typedef struct Scene
     Model m_modelTowerArcher1;
     Model m_modelTowerWizard1;
     Model m_modelProjectile;
+    Model m_modelCube;
 
     RadialMenu m_menuBuildings;
 } Scene;
@@ -152,12 +153,14 @@ void SceneLoad(Scene* _scene, const Grid _grid)
     }
 }
 
-void SceneInit(Scene* _scene, const Grid _grid)
+void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
 {
     const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
     _scene->m_modelEnemy = LoadModelFromMesh(cylinder);
+    _scene->m_modelEnemy.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
 
     _scene->m_modelTowerArcher1 = LoadModel("resources/models/buildings/towers/elves/ArcherTowerLvl1/ArcherTowerLvl1.obj");
+    _scene->m_modelTowerArcher1.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
     BuildingInit(
         &_scene->m_towers[0],
         _scene->m_modelTowerArcher1,
@@ -168,6 +171,7 @@ void SceneInit(Scene* _scene, const Grid _grid)
     _scene->m_towersSize += 1;
 
     _scene->m_modelTowerWizard1 = LoadModel("resources/models/buildings/towers/elves/WizardTowerLvl1/WizardTowerLvl1.obj");
+    _scene->m_modelTowerWizard1.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
     BuildingInit(
         &_scene->m_towers[1],
         _scene->m_modelTowerWizard1,
@@ -179,6 +183,11 @@ void SceneInit(Scene* _scene, const Grid _grid)
 
     const Mesh modelSphere = GenMeshSphere(0.1f, 10, 10);
     _scene->m_modelProjectile = LoadModelFromMesh(modelSphere);
+    _scene->m_modelProjectile.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+
+    Mesh cube = GenMeshSphere(2, 2, 2);
+    _scene->m_modelCube = LoadModelFromMesh(cube);
+    _scene->m_modelCube.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
 
     RadialMenuInit(&_scene->m_menuBuildings);
 }
@@ -188,23 +197,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     RadialMenuUpdate(&_scene->m_menuBuildings, _dt);
     const vec2u32 cellOvered = GridSelect(_grid, GetMousePosition(), _gameCam);
 
-    /*if (IsKeyPressed(KEY_DOWN))
-    {
-        EnemyMoveTo(&_scene->m_enemies[0], DIR_UP, _grid);
-    }
-    else if (IsKeyPressed(KEY_UP))
-    {
-        EnemyMoveTo(&_scene->m_enemies[0], DIR_DOWN, _grid);
-    }
-    else if (IsKeyPressed(KEY_LEFT))
-    {
-        EnemyMoveTo(&_scene->m_enemies[0], DIR_LEFT, _grid);
-    }
-    else if (IsKeyPressed(KEY_RIGHT))
-    {
-        EnemyMoveTo(&_scene->m_enemies[0], DIR_RIGHT, _grid);
-    }
-    else*/ if (IsKeyDown(KEY_ENTER))
+    if (IsKeyDown(KEY_ENTER))
     {
         const Vector3 enemyPos = Utils3DGetPosition(_scene->m_enemies[0].m_model.transform);
         const Vector3 targetPos = enemyPos;
@@ -301,7 +294,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     }
 }
 
-void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gameCam, const Grid _grid, const vec2u32 _cellOvered)
+void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gameCam, const Grid _grid, const vec2u32 _cellOvered, MatCap _matCap)
 {
     const Vector3 cellOveredToWorld = GridWorldPosFromIndex(_grid, _cellOvered);
     ShaderOutlineUpdate(_shaderOutline, _gameCam, cellOveredToWorld);
@@ -320,13 +313,17 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
             pickingColor[2] /= 255.f;
         }
 
-        BuildingRender(&_scene->m_towers[i]);
+        BuildingRender(&_scene->m_towers[i], _matCap);
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
 
+    MatCapUpdate(&_matCap, 0.5f, 0.99f);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
+        const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
+        _scene->m_enemies[i].m_model.materials[0].shader = _matCap.m_shader;
         DrawModel(_scene->m_enemies[i].m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, WHITE);
+        _scene->m_enemies[i].m_model.materials[0].shader = tmp;
     }
 
     for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
@@ -349,6 +346,11 @@ void SceneRenderWithShader(const Scene* _scene, const Shader _shader)
         DrawModel(_scene->m_towers[i].m_model, (Vector3){ 0.f, 0.f, 0.f }, 1.f, WHITE);
         _scene->m_towers[i].m_model.materials[0].shader = tmp;
     }
+
+    const Shader tmp = _scene->m_modelCube.materials[0].shader;
+    _scene->m_modelCube.materials[0].shader = _shader;
+    DrawModel(_scene->m_modelCube, (Vector3) { 5.f, 1.f, 0.f }, 1.0f, WHITE);
+    _scene->m_modelCube.materials[0].shader = tmp;
 }
 
 void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
@@ -369,4 +371,11 @@ void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
         DrawModelEx(_scene->m_towers[i].m_model, Utils3DGetPosition(transform), Utils3DGetRotation(transform), 0.f, Utils3DGetScale(transform), WHITE);
         _scene->m_towers[i].m_model.materials[0].shader = tmp;
     }
+
+    const u16 id = 256;
+    ShaderFlatColorUpdate(_shader, id);
+    const Shader tmp = _scene->m_modelCube.materials[0].shader;
+    _scene->m_modelCube.materials[0].shader = _shader->m_shader;
+    DrawModel(_scene->m_modelCube, (Vector3) { 5.f, 1.f, 0.f }, 1.0f, WHITE);
+    _scene->m_modelCube.materials[0].shader = tmp;
 }
