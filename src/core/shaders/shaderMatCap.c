@@ -15,7 +15,8 @@ typedef struct MatCap
 void MatCapInit(MatCap* _matcap)
 {
 	_matcap->m_shader = LoadShader("resources/shaders/vs_matcap.glsl", "resources/shaders/fs_matcap.glsl");
-	_matcap->m_texture = LoadTexture("resources/textures/matcaps/512px/simpleLightGrayDrawing.png");
+	//_matcap->m_texture = LoadTexture("resources/textures/matcaps/512px/simpleLightGrayDrawing.png");
+	_matcap->m_texture = LoadTexture("resources/textures/matcaps/512px/simpleLightIvory.png");
 	_matcap->m_textureLoc = GetShaderLocation(_matcap->m_shader, "matcapTexture");
 	_matcap->m_brightnessLoc = GetShaderLocation(_matcap->m_shader, "brightness");
 	_matcap->m_contrastLoc = GetShaderLocation(_matcap->m_shader, "contrast");

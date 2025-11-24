@@ -19,7 +19,15 @@ typedef struct Scene
     Model m_modelProjectile;
     Model m_modelCube;
 
+    Texture2D m_iconSimpleArrow;
+    Texture2D m_iconColdArrow;
+    Texture2D m_iconFireArrow;
+    Texture2D m_iconToxicArrow;
+    Texture2D m_iconSniperArrow;
+    Texture2D m_iconElectricArrow;
+
     RadialMenu m_menuBuildings;
+    bool m_displayRadialMenu;
 } Scene;
 
 void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
@@ -189,12 +197,20 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
     _scene->m_modelCube = LoadModelFromMesh(cube);
     _scene->m_modelCube.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
 
-    RadialMenuInit(&_scene->m_menuBuildings);
+    Texture2D icons[] =
+    {
+        _scene->m_iconSimpleArrow = LoadTexture("resources/textures/icons/arrowhead.png"),
+        _scene->m_iconColdArrow = LoadTexture("resources/textures/icons/frozen-arrow.png"),
+        _scene->m_iconFireArrow = LoadTexture("resources/textures/icons/flaming-arrow.png"),
+        _scene->m_iconToxicArrow = LoadTexture("resources/textures/icons/chemical-arrow.png"),
+        _scene->m_iconSniperArrow = LoadTexture("resources/textures/icons/supersonic-arrow.png"),
+        _scene->m_iconElectricArrow = LoadTexture("resources/textures/icons/charged-arrow.png"),
+    };
+    RadialMenuInit(&_scene->m_menuBuildings, icons, sizeof(icons) / sizeof(icons[0]));
 }
 
 void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f32 _dt)
 {
-    RadialMenuUpdate(&_scene->m_menuBuildings, _dt);
     const vec2u32 cellOvered = GridSelect(_grid, GetMousePosition(), _gameCam);
 
     if (IsKeyDown(KEY_ENTER))
@@ -202,6 +218,13 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
         const Vector3 enemyPos = Utils3DGetPosition(_scene->m_enemies[0].m_model.transform);
         const Vector3 targetPos = enemyPos;
         BuildingShootTo(&_scene->m_towers[0], _grid, targetPos, _scene->m_modelProjectile);
+    }
+    else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && _scene->m_displayRadialMenu == false)
+    {
+        if (GridBoundsCheck(_grid, cellOvered))
+        {
+            _scene->m_displayRadialMenu = true;
+        }
     }
     else if (IsKeyPressed(KEY_P))
     {
@@ -291,6 +314,11 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     for (u32 i = 0; i < _scene->m_towersSize; ++i)
     {
         BuildingUpdate(&_scene->m_towers[i], _dt);
+    }
+
+    // Building Menu
+    {
+        RadialMenuUpdate(&_scene->m_menuBuildings, _dt, &_scene->m_displayRadialMenu, GetMousePosition());
     }
 }
 
