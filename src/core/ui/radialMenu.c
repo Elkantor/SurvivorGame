@@ -105,27 +105,7 @@ void RadialMenuRender(RadialMenu* _radialMenu)
 
 	const u32 segments = _radialMenu->m_iconsListCount;
 	const f32 angleStep = (2.0f * PI) / segments;
-
-	// Draw icons
-	const u8 iconsCapacity = sizeof(_radialMenu->m_iconsList) / sizeof(_radialMenu->m_iconsList[0]);
-	for (u8 i = 0; i < _radialMenu->m_iconsListCount && i < iconsCapacity; ++i)
-	{
-		const f32 scale = 0.06f;
-		const f32 midAngle = (i + 0.5f) * angleStep + 3.0f * PI / 2.0f;
-		const Vector2 midpoint = 
-		{
-			.x = _radialMenu->m_start.x + _radialMenu->m_radius * cosf(midAngle) * 0.6f,
-			.y = _radialMenu->m_start.y + _radialMenu->m_radius * sinf(midAngle) * 0.6f
-		};
-
-		const Vector2 finalpoint =
-		{
-			.x = midpoint.x - 0.5f * (_radialMenu->m_iconsList[i].width * scale),
-			.y = midpoint.y - 0.5f * (_radialMenu->m_iconsList[i].height * scale),
-		};
-
-		DrawTextureEx(_radialMenu->m_iconsList[i], finalpoint, 0.f, scale, WHITE);
-	}
+	u8 overedIndex = IndexInvalidU8;
 
 	for (u32 i = 0; i < segments; ++i)
 	{
@@ -147,14 +127,36 @@ void RadialMenuRender(RadialMenu* _radialMenu)
 
 		if (lineSideSeg1 == LINE_LEFT && lineSideSeg2 == LINE_RIGHT)
 		{
-			Color enableColor = { 0, 117, 44, 150 };
+			const Color enableColor = { 240, 170, 0, 250 };
 			DrawCircleSector(_radialMenu->m_start, _radialMenu->m_radius, startAngle * RAD2DEG, endAngle * RAD2DEG, segments, enableColor);
+			overedIndex = i;
 			break;
 		}
+	}
 
+	// Draw icons
+	const u8 iconsCapacity = sizeof(_radialMenu->m_iconsList) / sizeof(_radialMenu->m_iconsList[0]);
+	for (u8 i = 0; i < _radialMenu->m_iconsListCount && i < iconsCapacity; ++i)
+	{
+		const f32 scale = 0.06f;
+		const f32 midAngle = (i + 0.5f) * angleStep + 3.0f * PI / 2.0f;
+		const Vector2 midpoint =
+		{
+			.x = _radialMenu->m_start.x + _radialMenu->m_radius * cosf(midAngle) * 0.6f,
+			.y = _radialMenu->m_start.y + _radialMenu->m_radius * sinf(midAngle) * 0.6f
+		};
+
+		const Vector2 finalpoint =
+		{
+			.x = midpoint.x - 0.5f * (_radialMenu->m_iconsList[i].width * scale),
+			.y = midpoint.y - 0.5f * (_radialMenu->m_iconsList[i].height * scale),
+		};
+
+		const Color color = overedIndex == i ? DARKGRAY : WHITE;
+		DrawTextureEx(_radialMenu->m_iconsList[i], finalpoint, 0.f, scale, color);
 	}
 
 	const f32 lineWidth = 2.f;
 	DrawCircleSegments(_radialMenu->m_start, _radialMenu->m_radius, segments, lineWidth, LIGHTGRAY);
-	DrawLineEx(_radialMenu->m_start, _radialMenu->m_end, lineWidth, ORANGE);
+	DrawLineEx(_radialMenu->m_start, _radialMenu->m_end, lineWidth, RED);
 }

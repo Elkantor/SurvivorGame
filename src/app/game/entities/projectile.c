@@ -61,7 +61,7 @@ void ProjectileRender(const Projectile* _projectile, MatCap _matCap)
 	const Shader tmp = _projectile->m_model.materials[0].shader;
 	_projectile->m_model.materials[0].shader = _matCap.m_shader;
 
-	MatCapUpdate(&_matCap, 0.1f, 0.99);
+	MatCapUpdate(&_matCap, 0.1f, 0.99f);
 	DrawModel(_projectile->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, BLACK);
 	_projectile->m_model.materials[0].shader = tmp;
 

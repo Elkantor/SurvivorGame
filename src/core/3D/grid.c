@@ -120,7 +120,7 @@ Vector3 GridCameraTargetGet(const Camera _gameCamera)
     return center;
 }
 
-void GridRender(const Grid _grid, const Camera _gameCamera, const Shader _shaderRadialFade, const Color _color)
+void GridRender(const Grid _grid, const Camera _gameCamera, const Shader _shaderRadialFade, const Color _gridColor, const vec2u32 _cellOvered)
 {
     const Vector3 center = GridCameraTargetGet(_gameCamera);
     const f32 thickness = 0.03f;
@@ -141,14 +141,14 @@ void GridRender(const Grid _grid, const Camera _gameCamera, const Shader _shader
     {
         const Vector3 startPos = { .x = -_grid.m_columns / 2.f, .y = 0.f, .z = (-_grid.m_lines / 2.f) + i };
         const Vector3 endPos = { .x = _grid.m_columns / 2.f, .y = 0.f, .z = (-_grid.m_lines / 2.f) + i };
-        DrawThickLine3D(startPos, endPos, thickness, _color);
+        DrawThickLine3D(startPos, endPos, thickness, _gridColor);
     }
 
     for (f32 i = 0; i < _grid.m_columns + 1; ++i)
     {
         const Vector3 startPos = { .x = (-_grid.m_columns / 2.f) + i, .y = 0.f, .z = -_grid.m_lines / 2.f };
         const Vector3 endPos = { .x = (-_grid.m_columns / 2.f) + i, .y = 0.f, .z = _grid.m_lines / 2.f };
-        DrawThickLine3D(startPos, endPos, thickness, _color);
+        DrawThickLine3D(startPos, endPos, thickness, _gridColor);
     }
 
     EndShaderMode();
@@ -156,15 +156,13 @@ void GridRender(const Grid _grid, const Camera _gameCamera, const Shader _shader
     // Draw overed cell in a specific color
     {
         const f32 thicknessSelected = 0.04f;
-        const Vector2 mousePos = GetMousePosition();
-        const vec2u32 cellOvered = GridSelect(_grid, mousePos, _gameCamera);
 
-        if (cellOvered.m_x == IndexInvalid || cellOvered.m_y == IndexInvalid)
+        if (_cellOvered.m_x == IndexInvalid || _cellOvered.m_y == IndexInvalid)
             return;
 
-        const f32 left = -_grid.m_columns / 2.f + (f32)cellOvered.m_x;
+        const f32 left = -_grid.m_columns / 2.f + (f32)_cellOvered.m_x;
         const f32 right = left + 1.f;
-        const f32 bottom = -_grid.m_lines / 2.f + (f32)cellOvered.m_y;
+        const f32 bottom = -_grid.m_lines / 2.f + (f32)_cellOvered.m_y;
         const f32 top = bottom + 1.f;
 
         const Color highlightColor = RED;

@@ -105,16 +105,4 @@ void BuildingRender(Building* _building, MatCap _matCap, Model _shadow)
     {
         ProjectileRender(&_building->m_projectiles[i], _matCap);
     }
-
-    // NOTE(Elkantor): Quick test to duplicate geometry to fake shadows
-    /*const Matrix transform = _building->m_model.transform;
-    Vector3 scale = Utils3DGetScale(transform);
-    scale.y += 0.1f;
-    scale.z -= 0.1f;
-    scale.x -= 0.01f;
-    Vector3 shadowRot = (Vector3){ -PI/2.f, 0.f, PI/4};
-    const Matrix shadowTransform = Utils3DCreateTransform(Utils3DGetPosition(transform), shadowRot, scale);
-    _building->m_model.transform = shadowTransform;
-    DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, BLACK);
-    _building->m_model.transform = transform;*/
 }

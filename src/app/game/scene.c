@@ -17,7 +17,6 @@ typedef struct Scene
     Model m_modelTowerArcher1;
     Model m_modelTowerWizard1;
     Model m_modelProjectile;
-    Model m_modelCube;
 
     Texture2D m_iconSimpleArrow;
     Texture2D m_iconColdArrow;
@@ -191,11 +190,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
 
     const Mesh modelSphere = GenMeshSphere(0.1f, 10, 10);
     _scene->m_modelProjectile = LoadModelFromMesh(modelSphere);
-    _scene->m_modelProjectile.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
-
-    Mesh cube = GenMeshSphere(2, 2, 2);
-    _scene->m_modelCube = LoadModelFromMesh(cube);
-    _scene->m_modelCube.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+    _scene->m_modelProjectile.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture2;
 
     Texture2D icons[] =
     {
@@ -316,10 +311,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
         BuildingUpdate(&_scene->m_towers[i], _dt);
     }
 
-    // Building Menu
-    {
-        RadialMenuUpdate(&_scene->m_menuBuildings, _dt, &_scene->m_displayRadialMenu, GetMousePosition());
-    }
+    RadialMenuUpdate(&_scene->m_menuBuildings, _dt, &_scene->m_displayRadialMenu, GetMousePosition());
 }
 
 void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gameCam, const Grid _grid, const vec2u32 _cellOvered, MatCap _matCap)
@@ -333,7 +325,7 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
         const Vector3 position = Utils3DGetPosition(_scene->m_towers[i].m_model.transform);
         const vec2u32 cellPos = GridIndexFromWorldPos(_grid, position);
 
-        if (cellPos.m_x == _cellOvered.m_x && cellPos.m_y == _cellOvered.m_y)
+        if (cellPos.m_x == _cellOvered.m_x && cellPos.m_y == _cellOvered.m_y && _scene->m_displayRadialMenu == false)
         {
             convertUint16ToFloat3Array((u16)i, pickingColor);
             pickingColor[0] /= 255.f;
@@ -345,7 +337,7 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
 
-    MatCapUpdate(&_matCap, 0.5f, 0.99f);
+    MatCapUpdate(&_matCap, 0.1f, 0.99f);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
@@ -374,11 +366,6 @@ void SceneRenderWithShader(const Scene* _scene, const Shader _shader)
         DrawModel(_scene->m_towers[i].m_model, (Vector3){ 0.f, 0.f, 0.f }, 1.f, WHITE);
         _scene->m_towers[i].m_model.materials[0].shader = tmp;
     }
-
-    const Shader tmp = _scene->m_modelCube.materials[0].shader;
-    _scene->m_modelCube.materials[0].shader = _shader;
-    DrawModel(_scene->m_modelCube, (Vector3) { 5.f, 1.f, 0.f }, 1.0f, WHITE);
-    _scene->m_modelCube.materials[0].shader = tmp;
 }
 
 void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
@@ -399,11 +386,4 @@ void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
         DrawModelEx(_scene->m_towers[i].m_model, Utils3DGetPosition(transform), Utils3DGetRotation(transform), 0.f, Utils3DGetScale(transform), WHITE);
         _scene->m_towers[i].m_model.materials[0].shader = tmp;
     }
-
-    const u16 id = 256;
-    ShaderFlatColorUpdate(_shader, id);
-    const Shader tmp = _scene->m_modelCube.materials[0].shader;
-    _scene->m_modelCube.materials[0].shader = _shader->m_shader;
-    DrawModel(_scene->m_modelCube, (Vector3) { 5.f, 1.f, 0.f }, 1.0f, WHITE);
-    _scene->m_modelCube.materials[0].shader = tmp;
 }
