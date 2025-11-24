@@ -164,7 +164,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
     BuildingInit(
         &_scene->m_towers[0],
         _scene->m_modelTowerArcher1,
-        (Vector3) { 0.5f, 0.f, 0.5f },
+        (Vector3) { 0.5f, 0.01f, 0.5f },
         (Vector3) { 0.f, 0.f, 0.f },
         (Vector3) { 0.2f, 0.2f, 0.2f }
     );
@@ -175,7 +175,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
     BuildingInit(
         &_scene->m_towers[1],
         _scene->m_modelTowerWizard1,
-        (Vector3) { 2.5f, 0.f, 0.5f },
+        (Vector3) { 2.5f, 0.01f, 0.5f },
         (Vector3) { 0.f, 0.f, 0.f },
         (Vector3) { 0.2f, 0.2f, 0.2f }
     );
@@ -313,7 +313,7 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
             pickingColor[2] /= 255.f;
         }
 
-        BuildingRender(&_scene->m_towers[i], _matCap);
+        BuildingRender(&_scene->m_towers[i], _matCap, _scene->m_modelProjectile);
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
 

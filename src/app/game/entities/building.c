@@ -92,12 +92,12 @@ void BuildingUpdate(Building* _building, const f32 _dt)
     }
 }
 
-void BuildingRender(Building* _building, MatCap _matCap)
+void BuildingRender(Building* _building, MatCap _matCap, Model _shadow)
 {
     const Shader tmp = _building->m_model.materials[0].shader;
     _building->m_model.materials[0].shader = _matCap.m_shader;
 
-    MatCapUpdate(&_matCap, 0.6f, 0.99);
+    MatCapUpdate(&_matCap, 0.15f, 1.0);
     DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.0f }, 1.f, WHITE);
     _building->m_model.materials[0].shader = tmp;
 
@@ -117,6 +117,4 @@ void BuildingRender(Building* _building, MatCap _matCap)
     _building->m_model.transform = shadowTransform;
     DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, BLACK);
     _building->m_model.transform = transform;*/
-
-
 }
