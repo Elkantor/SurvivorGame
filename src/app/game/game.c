@@ -98,7 +98,7 @@ void GameRender(Game* _game)
 
         // 2D on top: UI
         {
-            SceneRenderUI(&_game->m_scene);
+            SceneRenderUI(&_game->m_scene, _game->m_globalFont);
 
             char goldTxt[20] = { 0 };
             snprintf(goldTxt, 20, "Gold: %f", _game->m_gold);

@@ -352,9 +352,23 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     }
 }
 
-void SceneRenderUI(Scene* _scene)
+void SceneRenderUI(Scene* _scene, const Font _font)
 {
     RadialMenuRender(&_scene->m_menuBuildings);
+
+    // Draw FPS
+    {
+        char buff[100] = { 0 };
+        snprintf(buff, 100, "%.0f FPS", 1.f / GetFrameTime());
+    
+        const Color darkGray = { DARKGRAY.r, DARKGRAY.g, DARKGRAY.b, 80 };
+        const Color black = { BLACK.r, BLACK.g, BLACK.b, 80 };
+        const Rectangle panel = { GetScreenWidth() - 130.f, 0.f, 130.f, 50.f };
+        DrawRectangleGradientEx(panel, darkGray, black, black, darkGray);
+        DrawRectangleLines(panel.x, panel.y, panel.width, panel.height, black);
+
+        DrawTextEx(_font, buff, (Vector2) { GetScreenWidth() - 110.f, 10.f }, 24, 1.f, WHITE);
+    }
 }
 
 void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
