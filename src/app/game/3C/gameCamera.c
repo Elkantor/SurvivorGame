@@ -60,7 +60,7 @@ void GameCameraUpdate(GameCamera* _gameCamera, const f32 _dt)
         }
     }
 
-    const f32 moveSpeedFactor = _gameCamera->m_moveSpeed * (_gameCamera->m_zoomLevel / 30.f * PI);
+    const f32 moveSpeedFactor = _gameCamera->m_moveSpeed * _dt * 60.f * (_gameCamera->m_zoomLevel / 30.f * PI);
 
     // Move camera
     {

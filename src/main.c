@@ -13,7 +13,7 @@ int main(int _argc, char** _argv)
 
     while (WindowShouldClose() == false)
     {
-        const f32 deltaTime = 1.f/60.f;
+        const f32 deltaTime = GetFrameTime();
         GameUpdate(game, deltaTime);
         GameRender(game);
     }
