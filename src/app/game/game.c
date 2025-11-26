@@ -82,8 +82,8 @@ void GameRender(Game* _game)
         BeginMode3D(_game->m_camera.m_cam);
         {
             const vec2u32 cellHighlighted = _game->m_scene.m_displayRadialMenu ? (vec2u32) { IndexInvalid, IndexInvalid } : cellOvered;
-            SceneRender(&_game->m_scene, &_game->m_shaderOutline, _game->m_camera.m_cam, grid, cellHighlighted, _game->m_matCap);
             GridRender(grid, _game->m_camera.m_cam, _game->m_shaderRadialFade, (Color) { 180, 180, 180, 255 }, cellHighlighted);
+            SceneRender(&_game->m_scene, &_game->m_shaderOutline, _game->m_camera.m_cam, grid, cellHighlighted, _game->m_matCap);
         }
         EndMode3D();
 
