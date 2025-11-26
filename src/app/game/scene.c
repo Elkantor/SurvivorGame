@@ -357,17 +357,6 @@ void SceneRenderUI(Scene* _scene)
     RadialMenuRender(&_scene->m_menuBuildings);
 }
 
-void SceneRenderWithShader(const Scene* _scene, const Shader _shader)
-{
-    for (u16 i = 0; i < _scene->m_towersSize; ++i)
-    {
-        const Shader tmp = _scene->m_towers[i].m_model.materials[0].shader;
-        _scene->m_towers[i].m_model.materials[0].shader = _shader;
-        DrawModel(_scene->m_towers[i].m_model, (Vector3){ 0.f, 0.f, 0.f }, 1.f, WHITE);
-        _scene->m_towers[i].m_model.materials[0].shader = tmp;
-    }
-}
-
 void SceneRenderFlat(Scene* _scene, ShaderFlatColor* _shader)
 {
     for (u16 i = 0; i < _scene->m_towersSize; ++i)
