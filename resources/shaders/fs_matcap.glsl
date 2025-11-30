@@ -21,8 +21,6 @@ void main()
     vec2 uv = fragNormal.xy * 0.5 + 0.5;
     vec4 matcapColor = texture(texture1, uv);
 
-    /*float contrast = 0.99;
-    float brightness = 0.6;*/
     matcapColor = (matcapColor - 0.5) * contrast + 0.5 + brightness;
     matcapColor = clamp(matcapColor, 0.0, 1.0);
 
