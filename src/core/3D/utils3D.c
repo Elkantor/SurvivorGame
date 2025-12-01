@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../types.c"
 #include "../raylib.h"
 #include "../raymath.h"
 
@@ -79,4 +80,15 @@ Vector3 Utils3DVector3Lerp(const Vector3 _start, const Vector3 _end, const f32 _
         .y = _start.y + (_end.y - _start.y) * realT,
         .z = _start.z + (_end.z - _start.z) * realT
     };
+}
+
+f32 Utils3DClampf32(const f32 _value, const f32 _min, const f32 _max)
+{
+    return (_value < _min) ? _min : (_value > _max) ? _max : _value;
+}
+
+f32 Utils3DSmoothstepf32(const f32 _edge0, const f32 _edge1, const f32 _x)
+{
+    const f32 t = Utils3DClampf32((_x - _edge0) / (_edge1 - _edge0), 0.0f, 1.0f);
+    return t * t * (3.0f - 2.0f * t);
 }
