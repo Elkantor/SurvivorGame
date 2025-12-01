@@ -62,34 +62,36 @@ void RoadCellUpdate(RoadCell* _cell, const KeyboardKey _keyPressed)
 
 void RoadCellRender(const RoadCell* _cell, const Grid _grid)
 {
-	const Vector3 worldPos = GridWorldPosFromIndex(_grid, _cell->m_cell);
+	Vector3 worldPos = GridWorldPosFromIndex(_grid, _cell->m_cell);
+	worldPos.y += 0.1f;
+	const f32 arrowScale = 0.25f;
 
 	if (_cell->m_dir == DIR_LEFT)
 	{
-		const Vector3 v1 = { worldPos.x - 0.5f, worldPos.y, worldPos.z };
-		const Vector3 v2 = { worldPos.x + 0.5f, worldPos.y, worldPos.z + 0.5f };
-		const Vector3 v3 = { worldPos.x + 0.5f, worldPos.y, worldPos.z - 0.5f };
-		DrawTriangle3D(v1, v2, v3, GREEN);
+		const Vector3 v1 = { worldPos.x - arrowScale, worldPos.y, worldPos.z };
+		const Vector3 v2 = { worldPos.x + arrowScale, worldPos.y, worldPos.z + arrowScale };
+		const Vector3 v3 = { worldPos.x + arrowScale, worldPos.y, worldPos.z - arrowScale };
+		DrawTriangle3D(v1, v2, v3, ORANGE);
 	}
 	else if (_cell->m_dir == DIR_RIGHT)
 	{
-		const Vector3 v1 = { worldPos.x + 0.5f, worldPos.y, worldPos.z };
-		const Vector3 v2 = { worldPos.x - 0.5f, worldPos.y, worldPos.z - 0.5f };
-		const Vector3 v3 = { worldPos.x - 0.5f, worldPos.y, worldPos.z + 0.5f };
-		DrawTriangle3D(v1, v2, v3, GREEN);
+		const Vector3 v1 = { worldPos.x + arrowScale, worldPos.y, worldPos.z };
+		const Vector3 v2 = { worldPos.x - arrowScale, worldPos.y, worldPos.z - arrowScale };
+		const Vector3 v3 = { worldPos.x - arrowScale, worldPos.y, worldPos.z + arrowScale };
+		DrawTriangle3D(v1, v2, v3, ORANGE);
 	}
 	else if (_cell->m_dir == DIR_UP)
 	{
-		const Vector3 v1 = { worldPos.x - 0.5f, worldPos.y, worldPos.z + 0.5f };
-		const Vector3 v2 = { worldPos.x + 0.5f, worldPos.y, worldPos.z + 0.5f };
-		const Vector3 v3 = { worldPos.x, worldPos.y, worldPos.z - 0.5f };
-		DrawTriangle3D(v1, v2, v3, GREEN);
+		const Vector3 v1 = { worldPos.x - arrowScale, worldPos.y, worldPos.z + arrowScale };
+		const Vector3 v2 = { worldPos.x + arrowScale, worldPos.y, worldPos.z + arrowScale };
+		const Vector3 v3 = { worldPos.x, worldPos.y, worldPos.z - arrowScale };
+		DrawTriangle3D(v1, v2, v3, ORANGE);
 	}
 	else if (_cell->m_dir == DIR_DOWN)
 	{
-		const Vector3 v1 = { worldPos.x - 0.5f, worldPos.y, worldPos.z - 0.5f };
-		const Vector3 v2 = { worldPos.x, worldPos.y, worldPos.z + 0.5f };
-		const Vector3 v3 = { worldPos.x + 0.5f, worldPos.y, worldPos.z - 0.5f };
-		DrawTriangle3D(v1, v2, v3, GREEN);
+		const Vector3 v1 = { worldPos.x - arrowScale, worldPos.y, worldPos.z - arrowScale };
+		const Vector3 v2 = { worldPos.x, worldPos.y, worldPos.z + arrowScale };
+		const Vector3 v3 = { worldPos.x + arrowScale, worldPos.y, worldPos.z - arrowScale };
+		DrawTriangle3D(v1, v2, v3, ORANGE);
 	}
 }
