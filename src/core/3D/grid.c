@@ -139,15 +139,15 @@ void GridRender(const Grid _grid, const Camera _gameCamera, const Shader _shader
 
     for (f32 i = 0; i < _grid.m_lines + 1; ++i)
     {
-        const Vector3 startPos = { .x = -_grid.m_columns / 2.f, .y = 0.f, .z = (-_grid.m_lines / 2.f) + i };
-        const Vector3 endPos = { .x = _grid.m_columns / 2.f, .y = 0.f, .z = (-_grid.m_lines / 2.f) + i };
+        const Vector3 startPos = { .x = -_grid.m_columns / 2.f, .y = -0.1f, .z = (-_grid.m_lines / 2.f) + i };
+        const Vector3 endPos = { .x = _grid.m_columns / 2.f, .y = -0.1f, .z = (-_grid.m_lines / 2.f) + i };
         DrawThickLine3D(startPos, endPos, thickness, _gridColor);
     }
 
     for (f32 i = 0; i < _grid.m_columns + 1; ++i)
     {
-        const Vector3 startPos = { .x = (-_grid.m_columns / 2.f) + i, .y = 0.f, .z = -_grid.m_lines / 2.f };
-        const Vector3 endPos = { .x = (-_grid.m_columns / 2.f) + i, .y = 0.f, .z = _grid.m_lines / 2.f };
+        const Vector3 startPos = { .x = (-_grid.m_columns / 2.f) + i, .y = -0.1f, .z = -_grid.m_lines / 2.f };
+        const Vector3 endPos = { .x = (-_grid.m_columns / 2.f) + i, .y = -0.1f, .z = _grid.m_lines / 2.f };
         DrawThickLine3D(startPos, endPos, thickness, _gridColor);
     }
 
