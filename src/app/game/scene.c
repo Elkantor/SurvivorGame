@@ -17,13 +17,16 @@ typedef struct Scene
     Model m_modelTowerArcher1;
     Model m_modelTowerWizard1;
     Model m_modelProjectile;
+    Model m_modelBigTree;
+    Model m_modelPath;
+    Model m_modelGrass2;
 
-    Texture2D m_iconSimpleArrow;
-    Texture2D m_iconColdArrow;
-    Texture2D m_iconFireArrow;
-    Texture2D m_iconToxicArrow;
-    Texture2D m_iconSniperArrow;
-    Texture2D m_iconElectricArrow;
+    Texture m_iconSimpleArrow;
+    Texture m_iconColdArrow;
+    Texture m_iconFireArrow;
+    Texture m_iconToxicArrow;
+    Texture m_iconSniperArrow;
+    Texture m_iconElectricArrow;
 
     RadialMenu m_menuBuildings;
     bool m_displayRadialMenu;
@@ -173,7 +176,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
         _scene->m_modelTowerArcher1,
         (Vector3) { 0.5f, 0.01f, 0.5f },
         (Vector3) { 0.f, 0.f, 0.f },
-        (Vector3) { 0.2f, 0.2f, 0.2f }
+        (Vector3) { 0.25f, 0.25f, 0.25f }
     );
     _scene->m_towersSize += 1;
 
@@ -184,13 +187,58 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
         _scene->m_modelTowerWizard1,
         (Vector3) { 2.5f, 0.01f, 0.5f },
         (Vector3) { 0.f, 0.f, 0.f },
-        (Vector3) { 0.2f, 0.2f, 0.2f }
+        (Vector3) { 0.25f, 0.25f, 0.25f }
     );
     _scene->m_towersSize += 1;
 
     const Mesh modelSphere = GenMeshSphere(0.1f, 10, 10);
     _scene->m_modelProjectile = LoadModelFromMesh(modelSphere);
     _scene->m_modelProjectile.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture2;
+
+    const Texture2D texture = LoadTexture("resources/textures/alts/PolygonElven_Texture_02_A.png");
+    
+    // Big Tree
+    {
+        _scene->m_modelBigTree = LoadModel("resources/models/props/BigTree.obj");
+
+        for (u32 i = 0; i < _scene->m_modelBigTree.meshCount; ++i)
+        {
+            SmoothMeshNormals(&_scene->m_modelBigTree.meshes[i]);
+        }
+
+        const Vector3 pos = { 2.5f, 0.f, 1.5f };
+        const Vector3 rotation = { 0.f, 0.f, 0.f };
+        const Vector3 scale = { 0.25f, 0.25f, 0.25f };
+        _scene->m_modelBigTree.transform = Utils3DCreateTransform(pos, rotation, scale);
+        _scene->m_modelBigTree.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;
+        _scene->m_modelBigTree.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+    }
+
+    // Path
+    {
+        _scene->m_modelPath = LoadModel("resources/models/props/Path.obj");
+        const Matrix transform = _scene->m_modelPath.transform;
+        const vec2u32 posGrid = { 53, 53 };
+        const Vector3 pos = GridWorldPosFromIndex(_grid, posGrid);
+        const Vector3 rotation = Utils3DGetRotation(transform);
+        const Vector3 scale = { 0.4f, 0.4f, 0.4f };
+        _scene->m_modelPath.transform = Utils3DCreateTransform(pos, rotation, scale);
+        _scene->m_modelPath.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;
+        _scene->m_modelPath.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+    }
+
+    // Grass2
+    {
+        _scene->m_modelGrass2 = LoadModel("resources/models/props/Grass02.obj");
+        const Matrix transform = _scene->m_modelGrass2.transform;
+        const vec2u32 posGrid = { 53, 53 };
+        const Vector3 pos = GridWorldPosFromIndex(_grid, posGrid);
+        const Vector3 rotation = Utils3DGetRotation(transform);
+        const Vector3 scale = { 0.4f, 0.4f, 0.4f };
+        _scene->m_modelGrass2.transform = Utils3DCreateTransform(pos, rotation, scale);
+        _scene->m_modelGrass2.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;
+        _scene->m_modelGrass2.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+    }
 
     Texture2D icons[] =
     {
@@ -336,8 +384,11 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
         BuildingRender(&_scene->m_towers[i], _matCap, _scene->m_modelProjectile);
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
+    
+    MatCapUpdate(&_matCap, 0.1f, 1.f);
+    _scene->m_modelBigTree.materials[0].shader = _matCap.m_shader;
+    DrawModel(_scene->m_modelBigTree, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
 
-    MatCapUpdate(&_matCap, 0.1f, 0.99f);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
@@ -346,10 +397,30 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
         _scene->m_enemies[i].m_model.materials[0].shader = tmp;
     }
 
+    _scene->m_modelPath.materials[0].shader = _matCap.m_shader;
     for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
     {
         RoadCellRender(&_scene->m_roadCells[i], _grid);
+        const Vector3 worldPos = GridWorldPosFromIndex(_grid, _scene->m_roadCells[i].m_cell);
+        {
+            const Matrix transform = _scene->m_modelPath.transform;
+            const Vector3 rotation = Utils3DGetRotation(transform);
+            const Vector3 scale = Utils3DGetScale(transform);
+            _scene->m_modelPath.transform = Utils3DCreateTransform(worldPos, rotation, scale);
+        }
+        DrawModel(_scene->m_modelPath, (Vector3) { -0.5f, 0.f, 0.5f }, 1.f, WHITE);
+        
+        MatCapUpdate(&_matCap, 0.1f, 1.f);
+        _scene->m_modelGrass2.materials[0].shader = _matCap.m_shader;
+        {
+            const f32 grassRotation = i % 4 * PI / 2.f;
+            const Vector3 scale = Utils3DGetScale(_scene->m_modelGrass2.transform);
+            const Vector3 rotation = Utils3DGetRotation(_scene->m_modelGrass2.transform);
+            _scene->m_modelGrass2.transform = Utils3DCreateTransform(worldPos, rotation, scale);
+            DrawModelEx(_scene->m_modelGrass2, (Vector3) { 0.f, 0.1f, 0.f }, (Vector3){0.f, 1.f, 0.f}, grassRotation, (Vector3) { 1.f, 1.f, 1.f }, WHITE);
+        }
     }
+
 }
 
 void SceneRenderUI(Scene* _scene, const Font _font)
