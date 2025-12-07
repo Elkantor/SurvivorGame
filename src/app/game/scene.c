@@ -4,7 +4,7 @@
 
 typedef struct Scene
 {
-    Enemy m_enemies[10];
+    Enemy m_enemies[20];
     u32 m_enemiesSize;
 
     Building m_towers[10];
@@ -17,7 +17,7 @@ typedef struct Scene
     Model m_modelTowerArcher1;
     Model m_modelTowerWizard1;
     Model m_modelProjectile;
-    Model m_modelBigTree;
+    Model m_modelSkeletonWarrior;
     Model m_modelPath;
     Model m_modelGrass2;
 
@@ -51,14 +51,15 @@ void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
     _scene->m_enemiesSize += 1;
 }
 
-void SceneSave(const Scene* _scene)
+void SceneSave(const Scene* _scene, Arena* _frameArena)
 {
-    u8 buff[204800] = { 0 };
+    const i32 buffSize = 204800;
+    u8* buff = ArenaPush(_frameArena, buffSize);
     binn obj = { 0 };
 
     bool success = true;
 
-    if (binn_create(&obj, BINN_OBJECT, sizeof(buff), buff))
+    if (binn_create(&obj, BINN_OBJECT, buffSize, buff))
     {
         // Road Cells
         {
@@ -109,6 +110,8 @@ void SceneSave(const Scene* _scene)
     {
         SaveFileData("./sceneSaved.dat", binn_ptr(&obj), binn_size(&obj));
     }
+
+    ArenaPop(_frameArena, buff);
 }
 
 void SceneLoad(Scene* _scene, const Grid _grid)
@@ -165,9 +168,19 @@ void SceneLoad(Scene* _scene, const Grid _grid)
 
 void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
 {
-    const Mesh cylinder = GenMeshCylinder(0.25f, 1.f, 16.f);
-    _scene->m_modelEnemy = LoadModelFromMesh(cylinder);
-    _scene->m_modelEnemy.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+    // Skeleton Warrior
+    {
+        const Texture textureSkeleton = LoadTexture("resources/textures/enemies/skeleton_texture.png");
+        _scene->m_modelEnemy = LoadModel("resources/models/enemies/SkeletonWarrior.glb");
+        const Vector3 pos = { 2.5f, 0.f, 1.5f };
+        const Vector3 rotation = { 0.f, 0.f, 0.f };
+        const Vector3 scale = { 0.35f, 0.35f, 0.35f };
+        _scene->m_modelEnemy.transform = Utils3DCreateTransform(pos, rotation, scale);
+        _scene->m_modelEnemy.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = textureSkeleton;
+        _scene->m_modelEnemy.materials[1].maps[MATERIAL_MAP_ALBEDO].texture = textureSkeleton;
+        _scene->m_modelEnemy.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+        _scene->m_modelEnemy.materials[1].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
+    }
 
     _scene->m_modelTowerArcher1 = LoadModel("resources/models/buildings/towers/elves/ArcherTowerLvl1/ArcherTowerLvl1.obj");
     _scene->m_modelTowerArcher1.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
@@ -195,24 +208,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
     _scene->m_modelProjectile = LoadModelFromMesh(modelSphere);
     _scene->m_modelProjectile.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture2;
 
-    const Texture2D texture = LoadTexture("resources/textures/alts/PolygonElven_Texture_02_A.png");
-    
-    // Big Tree
-    {
-        _scene->m_modelBigTree = LoadModel("resources/models/props/BigTree.obj");
-
-        for (u32 i = 0; i < _scene->m_modelBigTree.meshCount; ++i)
-        {
-            SmoothMeshNormals(&_scene->m_modelBigTree.meshes[i]);
-        }
-
-        const Vector3 pos = { 2.5f, 0.f, 1.5f };
-        const Vector3 rotation = { 0.f, 0.f, 0.f };
-        const Vector3 scale = { 0.25f, 0.25f, 0.25f };
-        _scene->m_modelBigTree.transform = Utils3DCreateTransform(pos, rotation, scale);
-        _scene->m_modelBigTree.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;
-        _scene->m_modelBigTree.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
-    }
+    const Texture textureElven = LoadTexture("resources/textures/alts/PolygonElven_Texture_02_A.png");
 
     // Path
     {
@@ -223,7 +219,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
         const Vector3 rotation = Utils3DGetRotation(transform);
         const Vector3 scale = { 0.4f, 0.4f, 0.4f };
         _scene->m_modelPath.transform = Utils3DCreateTransform(pos, rotation, scale);
-        _scene->m_modelPath.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;
+        _scene->m_modelPath.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = textureElven;
         _scene->m_modelPath.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
     }
 
@@ -236,7 +232,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
         const Vector3 rotation = Utils3DGetRotation(transform);
         const Vector3 scale = { 0.4f, 0.4f, 0.4f };
         _scene->m_modelGrass2.transform = Utils3DCreateTransform(pos, rotation, scale);
-        _scene->m_modelGrass2.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;
+        _scene->m_modelGrass2.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = textureElven;
         _scene->m_modelGrass2.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
     }
 
@@ -252,7 +248,7 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
     RadialMenuInit(&_scene->m_menuBuildings, icons, sizeof(icons) / sizeof(icons[0]));
 }
 
-void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f32 _dt)
+void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f32 _dt, Arena* _frameArena)
 {
     const vec2u32 cellOvered = GridSelect(_grid, GetMousePosition(), _gameCam);
 
@@ -275,7 +271,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     }
     else if (IsKeyPressed(KEY_F7))
     {
-        SceneSave(_scene);
+        SceneSave(_scene, _frameArena);
     }
     else if (IsKeyPressed(KEY_F8))
     {
@@ -334,7 +330,7 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
 
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
-        EnemyUpdate(&_scene->m_enemies[i], _grid, _dt);
+        EnemyUpdate(&_scene->m_enemies[i], _grid, _dt, _scene->m_roadCells, _scene->m_roadCellsSize);
 
         const vec2u32 cell = _scene->m_enemies[i].m_cell;
         u32 foundIndex = IndexInvalid;
@@ -385,18 +381,19 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
     
-    MatCapUpdate(&_matCap, 0.1f, 1.f);
-    _scene->m_modelBigTree.materials[0].shader = _matCap.m_shader;
-    DrawModel(_scene->m_modelBigTree, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
-
+    MatCapUpdate(&_matCap, 0.5f, 1.f);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
+
         _scene->m_enemies[i].m_model.materials[0].shader = _matCap.m_shader;
-        DrawModel(_scene->m_enemies[i].m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.f, WHITE);
+        _scene->m_enemies[i].m_model.materials[1].shader = _matCap.m_shader;
+        DrawModel(_scene->m_enemies[i].m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
         _scene->m_enemies[i].m_model.materials[0].shader = tmp;
+        _scene->m_enemies[i].m_model.materials[1].shader = tmp;
     }
 
+    MatCapUpdate(&_matCap, 0.1f, 1.f);
     _scene->m_modelPath.materials[0].shader = _matCap.m_shader;
     for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
     {

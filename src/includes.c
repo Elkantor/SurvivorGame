@@ -22,7 +22,7 @@
 #include "app/game/3C/gameCamera.c"
 #include "app/game/entities/projectile.c"
 #include "app/game/entities/building.c"
-#include "app/game/entities/enemy.c"
 #include "app/game/entities/road.c"
+#include "app/game/entities/enemy.c"
 #include "app/game/scene.c"
 #include "app/game/game.c"

@@ -133,7 +133,44 @@ void EnemyUpdateMoveTo(Enemy* _enemy, const Grid _grid, const f32 _dt)
     _enemy->m_model.transform = newTransform;
 }
 
-void EnemyUpdate(Enemy* _enemy, const Grid _grid, const f32 _dt)
+void EnemyUpdateOrientation(Enemy* _enemy, const Grid _grid, const f32 _dt, const RoadCell* _roadCells, const u32 _roadCellsCount)
+{
+    for (u32 i = 0; i < _roadCellsCount; ++i)
+    {
+        if (_roadCells[i].m_cell.m_x == _enemy->m_cell.m_x && _roadCells[i].m_cell.m_y == _enemy->m_cell.m_y)
+        {
+            const Dir dir = _roadCells[i].m_dir;
+
+            if (dir == DIR_NONE)
+                return;
+
+            const Matrix transform = _enemy->m_model.transform;
+            const Vector3 pos = Utils3DGetPosition(transform);
+            const f32 dirAngles[] = 
+            { 
+                [DIR_UP] = -PI, 
+                [DIR_DOWN] = 0.f, 
+                [DIR_LEFT] = -PI/2.f,
+                [DIR_RIGHT] = PI/2.f
+            };
+            
+            const f32 y_angle = dirAngles[dir];
+            const Vector3 newRotation = (Vector3){ 0, y_angle, 0 };
+            const Quaternion quaternion = QuaternionFromEuler(newRotation.z, newRotation.y, newRotation.x);
+            const Matrix rotation = QuaternionToMatrix(quaternion);
+            const Vector3 scale = Utils3DGetScale(transform);
+
+            const Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
+            const Matrix matRotation = rotation;
+            const Matrix matTranslation = MatrixTranslate(pos.x, pos.y, pos.z);
+            const Matrix newTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
+            _enemy->m_model.transform = newTransform;
+        }
+    }
+}
+
+void EnemyUpdate(Enemy* _enemy, const Grid _grid, const f32 _dt, const RoadCell* _roadCells, const u32 _roadCellsCount)
 {
     EnemyUpdateMoveTo(_enemy, _grid, _dt);
+    EnemyUpdateOrientation(_enemy, _grid, _dt, _roadCells, _roadCellsCount);
 }

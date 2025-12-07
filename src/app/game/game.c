@@ -40,7 +40,7 @@ void GameInit(Game* _game)
     _game->m_gold = 0;
 }
 
-void GameUpdate(Game* _game, const f32 _dt)
+void GameUpdate(Game* _game, const f32 _dt, Arena* _frameArena)
 {
     RenderTexture3DUpdate(&_game->m_passColorPicker);
 
@@ -51,7 +51,7 @@ void GameUpdate(Game* _game, const f32 _dt)
 
     const Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
 
-    SceneUpdate(&_game->m_scene, _game->m_camera.m_cam, grid, _dt);
+    SceneUpdate(&_game->m_scene, _game->m_camera.m_cam, grid, _dt, _frameArena);
     UpdateCamera(&_game->m_camera.m_cam, _game->m_camera.m_cam.projection);
 
     ConsoleUpdate(&_game->m_console, _dt);

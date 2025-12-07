@@ -14,8 +14,10 @@ int main(int _argc, char** _argv)
     while (WindowShouldClose() == false)
     {
         const f32 deltaTime = GetFrameTime();
-        GameUpdate(game, deltaTime);
+        u8* frameArenaStart = ArenaPush(&mainArena, 1);
+        GameUpdate(game, deltaTime, &mainArena);
         GameRender(game);
+        ArenaPop(&mainArena, frameArenaStart);
     }
 
     ArenaPop(&mainArena, game);
