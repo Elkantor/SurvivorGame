@@ -154,8 +154,8 @@ void EnemyUpdateOrientation(Enemy* _enemy, const Grid _grid, const f32 _dt, cons
                 [DIR_RIGHT] = PI/2.f
             };
             
-            const f32 y_angle = dirAngles[dir];
-            const Vector3 newRotation = (Vector3){ 0, y_angle, 0 };
+            const f32 angleY = dirAngles[dir];
+            const Vector3 newRotation = (Vector3){ 0, angleY, 0 };
             const Quaternion quaternion = QuaternionFromEuler(newRotation.z, newRotation.y, newRotation.x);
             const Matrix rotation = QuaternionToMatrix(quaternion);
             const Vector3 scale = Utils3DGetScale(transform);
