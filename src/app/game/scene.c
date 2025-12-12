@@ -381,7 +381,7 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
     
-    MatCapUpdate(&_matCap, 0.5f, 1.f);
+    MatCapUpdate(&_matCap, 0.5f, 1.f, 5.f, 2.f, ORANGE);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
@@ -393,10 +393,11 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
         _scene->m_enemies[i].m_model.materials[1].shader = tmp;
     }
 
-    MatCapUpdate(&_matCap, 0.1f, 1.f);
     _scene->m_modelPath.materials[0].shader = _matCap.m_shader;
+    _scene->m_modelGrass2.materials[0].shader = _matCap.m_shader;
     for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
     {
+        MatCapUpdate(&_matCap, 0.1f, 1.f, 0.f, 0.f, BLACK);
         RoadCellRender(&_scene->m_roadCells[i], _grid);
         const Vector3 worldPos = GridWorldPosFromIndex(_grid, _scene->m_roadCells[i].m_cell);
         {
@@ -407,15 +408,34 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
         }
         DrawModel(_scene->m_modelPath, (Vector3) { -0.5f, 0.f, 0.5f }, 1.f, WHITE);
         
-        MatCapUpdate(&_matCap, 0.1f, 1.f);
-        _scene->m_modelGrass2.materials[0].shader = _matCap.m_shader;
+        /*if (i % 6 == 0)
         {
-            const f32 grassRotation = i % 4 * PI / 2.f;
-            const Vector3 scale = Utils3DGetScale(_scene->m_modelGrass2.transform);
-            const Vector3 rotation = Utils3DGetRotation(_scene->m_modelGrass2.transform);
-            _scene->m_modelGrass2.transform = Utils3DCreateTransform(worldPos, rotation, scale);
-            DrawModelEx(_scene->m_modelGrass2, (Vector3) { 0.f, 0.1f, 0.f }, (Vector3){0.f, 1.f, 0.f}, grassRotation, (Vector3) { 1.f, 1.f, 1.f }, WHITE);
-        }
+            MatCapUpdate(&_matCap, 0.1f, 1.f, 5.f, 0.6f, ORANGE);
+            {
+                const Vector3 pos = worldPos;
+                const f32 dirAngles[] = 
+                { 
+                    [DIR_UP] = -PI, 
+                    [DIR_DOWN] = 0.f, 
+                    [DIR_LEFT] = -PI/2.f,
+                    [DIR_RIGHT] = PI/2.f
+                };
+            
+                const f32 angleY = dirAngles[i % 4];
+                const Vector3 newRotation = (Vector3){ 0, angleY, 0 };
+                const Quaternion quaternion = QuaternionFromEuler(newRotation.z, newRotation.y, newRotation.x);
+                const Matrix rotation = QuaternionToMatrix(quaternion);
+                const Vector3 scale = Utils3DGetScale(_scene->m_modelGrass2.transform);
+
+                const Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
+                const Matrix matRotation = rotation;
+                const Matrix matTranslation = MatrixTranslate(pos.x, pos.y, pos.z);
+                const Matrix newTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
+
+                _scene->m_modelGrass2.transform = newTransform;
+                DrawModelEx(_scene->m_modelGrass2, (Vector3) { 0.f, 0.1f, 0.f }, (Vector3){0.f, 1.f, 0.f}, angleY, (Vector3) { 1.f, 1.f, 1.f }, WHITE);
+            }
+        }*/
     }
 
 }
