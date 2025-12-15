@@ -10,6 +10,7 @@ in vec4 vertexColor;
 out vec3 fragNormal;
 out vec2 fragTexCoord;
 out vec4 fragColor;
+out vec3 fragPosition;
 
 // Uniforms (Raylib defaults)
 uniform mat4 mvp;
@@ -21,5 +22,6 @@ void main()
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
     fragNormal = normalize((matNormal * vec4(vertexNormal, 0.0)).xyz);
+    fragPosition = (matModel * vec4(vertexPosition, 1.0)).xyz;
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 }
