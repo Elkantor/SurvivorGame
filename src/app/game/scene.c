@@ -2,9 +2,12 @@
 
 #include "../../includes.c"
 
+#define ENEMY_COUNT 20
+
 typedef struct Scene
 {
-    Enemy m_enemies[20];
+    Enemy m_enemies[ENEMY_COUNT];
+    u32 m_enemiesAnimFrames[ENEMY_COUNT];
     u32 m_enemiesSize;
 
     Building m_towers[10];
@@ -21,6 +24,9 @@ typedef struct Scene
     Model m_modelPath;
     Model m_modelGrass2;
 
+    ModelAnimation* m_modelAnimSkeletonWarrior;
+    i32 m_modelAnimSkeletonWarriorCount;
+
     Texture m_iconSimpleArrow;
     Texture m_iconColdArrow;
     Texture m_iconFireArrow;
@@ -34,7 +40,7 @@ typedef struct Scene
 
 void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
 {
-    const u32 capacity = sizeof(_scene->m_enemies) / sizeof(_scene->m_enemies[0]);
+    const u32 capacity = ENEMY_COUNT;
 
     if (_scene->m_enemiesSize >= capacity)
         return;
@@ -47,7 +53,6 @@ void SceneSpawnEnemy(Scene* _scene, const Grid _grid, const vec2u32 _spawnCell)
     position.y += 0.25f;
 
     EnemyInit(&_scene->m_enemies[index], _scene->m_modelEnemy, _grid, position);
-
     _scene->m_enemiesSize += 1;
 }
 
@@ -236,6 +241,9 @@ void SceneInit(Scene* _scene, const Grid _grid, const MatCap _matCap)
         _scene->m_modelGrass2.materials[0].maps[MATERIAL_MAP_METALNESS].texture = _matCap.m_texture;
     }
 
+    // Model anims
+    _scene->m_modelAnimSkeletonWarrior = LoadModelAnimations("resources/models/enemies/Rig_Medium_MovementBasic2.glb", &_scene->m_modelAnimSkeletonWarriorCount);
+
     Texture2D icons[] =
     {
         _scene->m_iconSimpleArrow = LoadTexture("resources/textures/icons/arrowhead.png"),
@@ -332,22 +340,12 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     {
         EnemyUpdate(&_scene->m_enemies[i], _grid, _dt, _scene->m_roadCells, _scene->m_roadCellsSize);
 
-        const vec2u32 cell = _scene->m_enemies[i].m_cell;
-        u32 foundIndex = IndexInvalid;
-
-        for (u32 j = 0; j < _scene->m_roadCellsSize; ++j)
-        {
-            if (RoadCellExistsAt(&_scene->m_roadCells[j], _grid, cell))
-            {
-                foundIndex = j;
-                break;
-            }
-        }
-
-        if (foundIndex != IndexInvalid)
-        {
-            EnemyMoveTo(&_scene->m_enemies[i], _scene->m_roadCells[foundIndex].m_dir, _grid);
-        }
+        const f32 updateRate = 1000.f / (_dt * 1000.f);
+        const f32 realFrameRate = updateRate / 24.f;
+        ModelAnimation anim = _scene->m_modelAnimSkeletonWarrior[6];
+        const f32 currentFrame = (_scene->m_enemiesAnimFrames[i] + realFrameRate);
+        _scene->m_enemiesAnimFrames[i] = ((i32)currentFrame) % anim.frameCount;
+        UpdateModelAnimation(_scene->m_enemies[i].m_model, anim, _scene->m_enemiesAnimFrames[i]);
     }
 
     for (u32 i = 0; i < _scene->m_towersSize; ++i)
@@ -381,11 +379,10 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
     
-    MatCapUpdate(&_matCap, 0.5f, 1.f, 5.f, 2.f, ORANGE);
+    MatCapUpdate(&_matCap, 0.6f, 1.f, 5.f, 1.f, ORANGE);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
-
         _scene->m_enemies[i].m_model.materials[0].shader = _matCap.m_shader;
         _scene->m_enemies[i].m_model.materials[1].shader = _matCap.m_shader;
         DrawModel(_scene->m_enemies[i].m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
@@ -394,10 +391,9 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
     }
 
     _scene->m_modelPath.materials[0].shader = _matCap.m_shader;
-    _scene->m_modelGrass2.materials[0].shader = _matCap.m_shader;
+    MatCapUpdate(&_matCap, 0.5f, 1.f, 10.f, 2.f, ORANGE);
     for (u32 i = 0; i < _scene->m_roadCellsSize; ++i)
     {
-        MatCapUpdate(&_matCap, 0.1f, 1.f, 0.f, 0.f, BLACK);
         RoadCellRender(&_scene->m_roadCells[i], _grid);
         const Vector3 worldPos = GridWorldPosFromIndex(_grid, _scene->m_roadCells[i].m_cell);
         {
@@ -407,35 +403,6 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
             _scene->m_modelPath.transform = Utils3DCreateTransform(worldPos, rotation, scale);
         }
         DrawModel(_scene->m_modelPath, (Vector3) { -0.5f, 0.f, 0.5f }, 1.f, WHITE);
-        
-        /*if (i % 6 == 0)
-        {
-            MatCapUpdate(&_matCap, 0.1f, 1.f, 5.f, 0.6f, ORANGE);
-            {
-                const Vector3 pos = worldPos;
-                const f32 dirAngles[] = 
-                { 
-                    [DIR_UP] = -PI, 
-                    [DIR_DOWN] = 0.f, 
-                    [DIR_LEFT] = -PI/2.f,
-                    [DIR_RIGHT] = PI/2.f
-                };
-            
-                const f32 angleY = dirAngles[i % 4];
-                const Vector3 newRotation = (Vector3){ 0, angleY, 0 };
-                const Quaternion quaternion = QuaternionFromEuler(newRotation.z, newRotation.y, newRotation.x);
-                const Matrix rotation = QuaternionToMatrix(quaternion);
-                const Vector3 scale = Utils3DGetScale(_scene->m_modelGrass2.transform);
-
-                const Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
-                const Matrix matRotation = rotation;
-                const Matrix matTranslation = MatrixTranslate(pos.x, pos.y, pos.z);
-                const Matrix newTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
-
-                _scene->m_modelGrass2.transform = newTransform;
-                DrawModelEx(_scene->m_modelGrass2, (Vector3) { 0.f, 0.1f, 0.f }, (Vector3){0.f, 1.f, 0.f}, angleY, (Vector3) { 1.f, 1.f, 1.f }, WHITE);
-            }
-        }*/
     }
 
 }

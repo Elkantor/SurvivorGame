@@ -97,7 +97,7 @@ void BuildingRender(Building* _building, MatCap _matCap, Model _shadow)
     const Shader tmp = _building->m_model.materials[0].shader;
     _building->m_model.materials[0].shader = _matCap.m_shader;
 
-    MatCapUpdate(&_matCap, 0.15f, 1.0, 5.f, 1.f, ORANGE);
+    MatCapUpdate(&_matCap, 0.5f, 1.0f, 5.f, 1.f, ORANGE);
     DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.0f }, 1.f, WHITE);
     _building->m_model.materials[0].shader = tmp;
 

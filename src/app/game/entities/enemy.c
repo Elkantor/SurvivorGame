@@ -19,7 +19,7 @@ void EnemyInit(Enemy* _enemy, const Model _model, const Grid _grid, const Vector
     _enemy->m_cell = GridIndexFromWorldPos(_grid, _pos);
     _enemy->m_model = _model;
 
-    const Vector3 scale = { 1.f, 1.f, 1.f };
+    const Vector3 scale = Utils3DGetScale(_model.transform);
     const Vector3 rotation = { 0.f, 0.f, 0.f };
     _enemy->m_model.transform = Utils3DCreateTransform(_pos, rotation, scale);
 
@@ -123,7 +123,7 @@ void EnemyUpdateMoveTo(Enemy* _enemy, const Grid _grid, const f32 _dt)
     toPos.y = enemyPos.y;
 
     const f32 percent = 1.f - (_enemy->m_animTimer.m_time / k_enemyMoveDuration);
-    const Vector3 currentPos = Utils3DVector3Lerp(fromPos, toPos, EaseOutBounce(percent));
+    const Vector3 currentPos = Utils3DVector3Lerp(fromPos, toPos, percent);
 
     const Matrix transform = _enemy->m_model.transform;
     const Vector3 rotation = Utils3DGetRotation(transform);
@@ -133,44 +133,62 @@ void EnemyUpdateMoveTo(Enemy* _enemy, const Grid _grid, const f32 _dt)
     _enemy->m_model.transform = newTransform;
 }
 
-void EnemyUpdateOrientation(Enemy* _enemy, const Grid _grid, const f32 _dt, const RoadCell* _roadCells, const u32 _roadCellsCount)
+void EnemyUpdateOrientation(Enemy* _enemy, const RoadCell _roadCell)
 {
-    for (u32 i = 0; i < _roadCellsCount; ++i)
+    if (_roadCell.m_cell.m_x == _enemy->m_cell.m_x && _roadCell.m_cell.m_y == _enemy->m_cell.m_y)
     {
-        if (_roadCells[i].m_cell.m_x == _enemy->m_cell.m_x && _roadCells[i].m_cell.m_y == _enemy->m_cell.m_y)
-        {
-            const Dir dir = _roadCells[i].m_dir;
+        const Dir dir = _roadCell.m_dir;
 
-            if (dir == DIR_NONE)
-                return;
+        if (dir == DIR_NONE)
+            return;
 
-            const Matrix transform = _enemy->m_model.transform;
-            const Vector3 pos = Utils3DGetPosition(transform);
-            const f32 dirAngles[] = 
-            { 
-                [DIR_UP] = -PI, 
-                [DIR_DOWN] = 0.f, 
-                [DIR_LEFT] = -PI/2.f,
-                [DIR_RIGHT] = PI/2.f
-            };
+        const Matrix transform = _enemy->m_model.transform;
+        const Vector3 pos = Utils3DGetPosition(transform);
+        const f32 dirAngles[] = 
+        { 
+            [DIR_UP] = -PI, 
+            [DIR_DOWN] = 0.f, 
+            [DIR_LEFT] = -PI/2.f,
+            [DIR_RIGHT] = PI/2.f
+        };
             
-            const f32 angleY = dirAngles[dir];
-            const Vector3 newRotation = (Vector3){ 0, angleY, 0 };
-            const Quaternion quaternion = QuaternionFromEuler(newRotation.z, newRotation.y, newRotation.x);
-            const Matrix rotation = QuaternionToMatrix(quaternion);
-            const Vector3 scale = Utils3DGetScale(transform);
+        const f32 angleY = dirAngles[dir];
+        const Vector3 newRotation = (Vector3){ 0, angleY, 0 };
+        const Quaternion quaternion = QuaternionFromEuler(newRotation.z, newRotation.y, newRotation.x);
+        const Matrix rotation = QuaternionToMatrix(quaternion);
+        const Vector3 scale = Utils3DGetScale(transform);
 
-            const Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
-            const Matrix matRotation = rotation;
-            const Matrix matTranslation = MatrixTranslate(pos.x, pos.y, pos.z);
-            const Matrix newTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
-            _enemy->m_model.transform = newTransform;
+        const Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
+        const Matrix matRotation = rotation;
+        const Matrix matTranslation = MatrixTranslate(pos.x, pos.y, pos.z);
+        const Matrix newTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
+        _enemy->m_model.transform = newTransform;
+    }
+}
+
+void EnemyUpdateChangeDir(Enemy* _enemy, const Grid _grid, const RoadCell* _roadCells, const u32 _roadCellsCount)
+{
+    const vec2u32 cell = _enemy->m_cell;
+    u32 foundIndex = IndexInvalid;
+
+    for (u32 j = 0; j < _roadCellsCount; ++j)
+    {
+        if (RoadCellExistsAt(&_roadCells[j], _grid, cell))
+        {
+            foundIndex = j;
+            break;
         }
+    }
+
+    if (foundIndex != IndexInvalid)
+    {
+        EnemyMoveTo(_enemy, _roadCells[foundIndex].m_dir, _grid);
+        EnemyUpdateOrientation(_enemy, _roadCells[foundIndex]);
     }
 }
 
 void EnemyUpdate(Enemy* _enemy, const Grid _grid, const f32 _dt, const RoadCell* _roadCells, const u32 _roadCellsCount)
 {
     EnemyUpdateMoveTo(_enemy, _grid, _dt);
-    EnemyUpdateOrientation(_enemy, _grid, _dt, _roadCells, _roadCellsCount);
+    EnemyUpdateChangeDir(_enemy, _grid, _roadCells, _roadCellsCount);
 }

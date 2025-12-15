@@ -20,7 +20,7 @@ typedef struct MatCap
 void MatCapInit(MatCap* _matcap)
 {
 	_matcap->m_shader = LoadShader("resources/shaders/vs_matcap.glsl", "resources/shaders/fs_matcap.glsl");
-	_matcap->m_texture = LoadTexture("resources/textures/matcaps/512px/simpleLightGrayDrawing.png");
+	_matcap->m_texture = LoadTexture("resources/textures/matcaps/512px/greyHighContrast.png");
 	_matcap->m_texture2 = LoadTexture("resources/textures/matcaps/512px/darkPurple.png");
 	_matcap->m_viewEyeLoc = GetShaderLocation(_matcap->m_shader, "viewEye");
 	_matcap->m_textureLoc = GetShaderLocation(_matcap->m_shader, "matcapTexture");
