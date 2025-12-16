@@ -36,5 +36,8 @@ void main()
     rim = pow(rim, rimPower);
     vec3 rimEffect = rimColor * rim * rimIntensity;
 
-    finalColor = diffuseColor * matcapColor * fragColor + vec4(rimEffect, 0.0);
+    //finalColor = diffuseColor * matcapColor * fragColor + vec4(rimEffect, 0.0);
+    // sharpen on edges with a mix to make models more "visible"
+    vec4 baseColor = diffuseColor * matcapColor * fragColor;
+    finalColor = mix(baseColor, vec4(rimEffect, 0.0) + baseColor, rim);
 }
