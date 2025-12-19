@@ -199,3 +199,14 @@ void EnemyRender(Enemy* _enemy)
 {
     DrawModel(_enemy->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
 }
+
+void EnemyRenderUI(Enemy* _enemy, const Camera _cam, const ModelAnimation* _anim, const u32 _animFrame)
+{
+    const Vector3 pos = Utils3DGetPosition(_enemy->m_model.transform);
+    const i32 boneChestPosID = 3;
+
+    const ModelAnimation anim = _anim[6];
+    const Vector3 bonePosChest = anim.framePoses[_animFrame][boneChestPosID].translation;
+    const Vector3 finalPos = Vector3Add(pos, bonePosChest);
+    HPBarRender(finalPos, 1.f, _cam);
+}

@@ -424,7 +424,7 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
 
 }
 
-void SceneRenderUI(Scene* _scene, const Font _font)
+void SceneRenderUI(Scene* _scene, const Font _font, const Camera _camera)
 {
     RadialMenuRender(&_scene->m_menuBuildings);
 
@@ -440,6 +440,11 @@ void SceneRenderUI(Scene* _scene, const Font _font)
         DrawRectangleLines(panel.x, panel.y, panel.width, panel.height, black);
 
         DrawTextEx(_font, buff, (Vector2) { GetScreenWidth() - 110.f, 10.f }, 24, 1.f, WHITE);
+    }
+
+    for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
+    {
+        EnemyRenderUI(&_scene->m_enemies[i], _camera, _scene->m_modelAnimSkeletonWarrior, _scene->m_enemiesAnimFrames[i]);
     }
 }
 
