@@ -12,9 +12,16 @@ typedef struct MatCap
 	i32 m_textureLoc;
 	i32 m_brightnessLoc;
 	i32 m_contrastLoc;
+
+	// For rim light
 	i32 m_rimPowerLoc;
 	i32 m_rimIntensityLoc;
 	i32 m_rimColorLoc;
+
+	// For shadows
+	i32 m_lightDirLoc;
+	i32 m_lightViewProjLoc;
+	i32 m_shadowMapLoc;
 } MatCap;
 
 void MatCapInit(MatCap* _matcap)
@@ -26,9 +33,19 @@ void MatCapInit(MatCap* _matcap)
 	_matcap->m_textureLoc = GetShaderLocation(_matcap->m_shader, "matcapTexture");
 	_matcap->m_brightnessLoc = GetShaderLocation(_matcap->m_shader, "brightness");
 	_matcap->m_contrastLoc = GetShaderLocation(_matcap->m_shader, "contrast");
+
+	// For rim light
 	_matcap->m_rimPowerLoc = GetShaderLocation(_matcap->m_shader, "rimPower");
 	_matcap->m_rimIntensityLoc = GetShaderLocation(_matcap->m_shader, "rimIntensity");
 	_matcap->m_rimColorLoc = GetShaderLocation(_matcap->m_shader, "rimColor");
+
+	// For shadows
+	_matcap->m_shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(_matcap->m_shader, "viewPos");
+	_matcap->m_lightViewProjLoc = GetShaderLocation(_matcap->m_shader, "lightVP");
+	_matcap->m_lightDirLoc = GetShaderLocation(_matcap->m_shader, "lightDir");
+	_matcap->m_shadowMapLoc = GetShaderLocation(_matcap->m_shader, "shadowMap");
+	i32 shadowMapResolution = 2048;
+	SetShaderValue(_matcap->m_shader, GetShaderLocation(_matcap->m_shader, "shadowMapResolution"), &shadowMapResolution, SHADER_UNIFORM_INT);
 
 }
 

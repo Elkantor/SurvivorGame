@@ -340,9 +340,10 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     {
         EnemyUpdate(&_scene->m_enemies[i], _grid, _dt, _scene->m_roadCells, _scene->m_roadCellsSize);
 
+        // Update ennemy model anims
         const f32 updateRate = 1000.f / (_dt * 1000.f);
         const f32 realFrameRate = updateRate / 24.f;
-        ModelAnimation anim = _scene->m_modelAnimSkeletonWarrior[6];
+        const ModelAnimation anim = _scene->m_modelAnimSkeletonWarrior[6];
         const f32 currentFrame = (_scene->m_enemiesAnimFrames[i] + realFrameRate);
         _scene->m_enemiesAnimFrames[i] = ((i32)currentFrame) % anim.frameCount;
         UpdateModelAnimation(_scene->m_enemies[i].m_model, anim, _scene->m_enemiesAnimFrames[i]);
@@ -356,12 +357,25 @@ void SceneUpdate(Scene* _scene, const Camera _gameCam, const Grid _grid, const f
     RadialMenuUpdate(&_scene->m_menuBuildings, _dt, &_scene->m_displayRadialMenu, GetMousePosition());
 }
 
+void SceneRenderShadows(Scene* _scene)
+{
+    for (u32 i = 0; i < _scene->m_towersSize; ++i)
+    {
+        BuildingRenderSimple(&_scene->m_towers[i]);
+    }
+    for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
+    {
+        EnemyRender(&_scene->m_enemies[i]);
+    }
+}
+
 void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gameCam, const Grid _grid, const vec2u32 _cellOvered, MatCap _matCap)
 {
     const Vector3 cellOveredToWorld = GridWorldPosFromIndex(_grid, _cellOvered);
     ShaderOutlineUpdate(_shaderOutline, _gameCam, cellOveredToWorld);
     f32 pickingColor[3] = { 1.f, 1.f, 1.f };
 
+    MatCapUpdate(&_matCap, 0.5f, 1.0f, 5.f, 1.f, ORANGE);
     for (u32 i = 0; i < _scene->m_towersSize; ++i)
     {
         const Vector3 position = Utils3DGetPosition(_scene->m_towers[i].m_model.transform);
@@ -375,17 +389,20 @@ void SceneRender(Scene* _scene, ShaderOutline* _shaderOutline, const Camera _gam
             pickingColor[2] /= 255.f;
         }
 
-        BuildingRender(&_scene->m_towers[i], _matCap, _scene->m_modelProjectile);
+        const Shader tmp = _scene->m_towers[i].m_model.materials[0].shader;
+        _scene->m_towers[i].m_model.materials[0].shader = _matCap.m_shader;
+        BuildingRender(&_scene->m_towers[i], _matCap);
+        _scene->m_towers[i].m_model.materials[0].shader = tmp;
     }
     SetShaderValue(_shaderOutline->m_shader, _shaderOutline->m_locColorPicker, &pickingColor, SHADER_UNIFORM_VEC3);
     
-    MatCapUpdate(&_matCap, 0.6f, 1.f, 5.f, 1.f, ORANGE);
+    MatCapUpdate(&_matCap, 0.6f, 1.f, 20.f, 10.f, ORANGE);
     for (u32 i = 0; i < _scene->m_enemiesSize; ++i)
     {
         const Shader tmp = _scene->m_enemies[i].m_model.materials[0].shader;
         _scene->m_enemies[i].m_model.materials[0].shader = _matCap.m_shader;
         _scene->m_enemies[i].m_model.materials[1].shader = _matCap.m_shader;
-        DrawModel(_scene->m_enemies[i].m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
+        EnemyRender(&_scene->m_enemies[i]);
         _scene->m_enemies[i].m_model.materials[0].shader = tmp;
         _scene->m_enemies[i].m_model.materials[1].shader = tmp;
     }

@@ -4,11 +4,12 @@
 
 typedef struct Enemy
 {
+    Model m_model;
+    Vector3 m_scale;
     vec2u32 m_cell;
     Timer m_animTimer;
     vec2u32 m_targetCell;
-    Vector3 m_scale;
-    Model m_model;
+    u32 m_lifePoints;
 } Enemy;
 
 
@@ -25,6 +26,7 @@ void EnemyInit(Enemy* _enemy, const Model _model, const Grid _grid, const Vector
 
     _enemy->m_targetCell = _enemy->m_cell;
     _enemy->m_animTimer = TimerInit(0.f);
+    _enemy->m_lifePoints = 100;
 }
 
 bool EnemySave(const Enemy* _enemy, binn* _binn)
@@ -191,4 +193,9 @@ void EnemyUpdate(Enemy* _enemy, const Grid _grid, const f32 _dt, const RoadCell*
 {
     EnemyUpdateMoveTo(_enemy, _grid, _dt);
     EnemyUpdateChangeDir(_enemy, _grid, _roadCells, _roadCellsCount);
+}
+
+void EnemyRender(Enemy* _enemy)
+{
+    DrawModel(_enemy->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
 }

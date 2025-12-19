@@ -6,31 +6,53 @@
 typedef struct Game
 {
     Scene m_scene;
-    Font m_globalFont;
-    RenderTexture3D m_passColorPicker;
-    GameCamera m_camera;
-    Shader m_shaderRadialFade;
-    MatCap m_matCap;
-    ShaderFlatColor m_shaderFlatColor;
-    ShaderOutline m_shaderOutline;
-    HUD m_hud;
     Console m_console;
+    MatCap m_matCap;
+    GameCamera m_camera;
+    Camera3D m_camLight;
+
+    Model m_modelGround;
+    Matrix m_lightView;
+    Matrix m_lightProj;
+    Matrix m_lightViewProj;
+
+    RenderTexture3D m_passColorPicker;
+    RenderTexture2D m_passShadows;
+    Font m_globalFont;
+    ShaderOutline m_shaderOutline;
+    ShaderFlatColor m_shaderFlatColor;
+    Shader m_shaderRadialFade;
+    HUD m_hud;
     f32 m_gold;
+    bool m_debugDrawShadowMap;
 } Game;
 
 const f32 k_gridWidth = 100.f;
 const f32 k_gridHeight = 100.f;
+const i32 k_textureActiveSlot = 10;
 
 void GameInit(Game* _game)
 {
     memset(_game, 0, sizeof(Game));
 
-    _game->m_globalFont = LoadFontEx("resources/fonts/aclonica-v25-latin/aclonica-v25-latin-regular.ttf", 24, NULL, 167);
-    RenderTexture3DInit(&_game->m_passColorPicker);
+    MatCapInit(&_game->m_matCap);
     GameCameraInit(&_game->m_camera);
 
+    _game->m_modelGround = LoadModelFromMesh(GenMeshPlane(100.f, 100.f, 1, 1));
+
+    // Shadows
+    _game->m_passShadows = Utils3DLoadShadowmapRenderTexture(2048, 2048);
+    const Vector3 lightDir = Vector3Normalize((Vector3) { 0.35f, -1.0f, -0.35f });
+    _game->m_camLight.position = Vector3Scale(lightDir, -15.0f);
+    _game->m_camLight.target = Vector3Zero();
+    _game->m_camLight.projection = CAMERA_ORTHOGRAPHIC; // Use an orthographic projection for directional lights
+    _game->m_camLight.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+    _game->m_camLight.fovy = 20.0f;
+
+    RenderTexture3DInit(&_game->m_passColorPicker);
+
     _game->m_shaderRadialFade = LoadShader("resources/shaders/vs_radialFade.glsl", "resources/shaders/fs_radialFade.glsl");
-    MatCapInit(&_game->m_matCap);
+    _game->m_globalFont = LoadFontEx("resources/fonts/aclonica-v25-latin/aclonica-v25-latin-regular.ttf", 24, NULL, 167);
 
     const Grid grid = { .m_lines = k_gridWidth, .m_columns = k_gridHeight };
     SceneInit(&_game->m_scene, grid, _game->m_matCap);
@@ -78,9 +100,46 @@ void GameRender(Game* _game)
 
         ClearBackground(GRAY);
 
+        // Shadows map
+        BeginTextureMode(_game->m_passShadows);
+        {
+            ClearBackground(WHITE);
+            
+            const Vector3 cameraPos = _game->m_camera.m_cam.position;
+            SetShaderValue(_game->m_matCap.m_shader, _game->m_matCap.m_shader.locs[SHADER_LOC_VECTOR_VIEW], &cameraPos, SHADER_UNIFORM_VEC3);
+
+            const Vector3 lightDir = Vector3Normalize((Vector3) { 0.35f, -1.0f, -0.35f });
+            SetShaderValue(_game->m_matCap.m_shader, _game->m_matCap.m_lightDirLoc, &lightDir, SHADER_UNIFORM_VEC3);
+            _game->m_camLight.position = Vector3Scale(lightDir, -15.0f);
+
+            rlEnableBackfaceCulling();
+            rlSetCullFace(RL_CULL_FACE_FRONT);
+            BeginMode3D(_game->m_camLight);
+            {
+                _game->m_lightView = rlGetMatrixModelview();
+                _game->m_lightProj = rlGetMatrixProjection();
+                
+                SceneRenderShadows(&_game->m_scene);
+            }
+            EndMode3D();
+            rlDisableBackfaceCulling();
+        }
+        EndTextureMode();
+        
+        _game->m_lightViewProj = MatrixMultiply(_game->m_lightView, _game->m_lightProj);
+
+        SetShaderValueMatrix(_game->m_matCap.m_shader, _game->m_matCap.m_lightViewProjLoc, _game->m_lightViewProj);
+        rlActiveTextureSlot(k_textureActiveSlot);
+        rlEnableTexture(_game->m_passShadows.depth.id);
+        rlSetUniform(_game->m_matCap.m_shadowMapLoc, &k_textureActiveSlot, SHADER_UNIFORM_INT, 1);
+        rlSetCullFace(RL_CULL_FACE_BACK);
+
         // Render 3D Models
         BeginMode3D(_game->m_camera.m_cam);
         {
+            _game->m_modelGround.materials[0].shader = _game->m_matCap.m_shader;
+            DrawModel(_game->m_modelGround, (Vector3) { 0.f, -0.101f, 0.f }, 1.f, WHITE);
+
             const vec2u32 cellHighlighted = _game->m_scene.m_displayRadialMenu ? (vec2u32) { IndexInvalid, IndexInvalid } : cellOvered;
             GridRender(grid, _game->m_camera.m_cam, _game->m_shaderRadialFade, (Color) { 180, 180, 180, 255 }, cellHighlighted);
             SetShaderValueV(_game->m_matCap.m_shader, _game->m_matCap.m_viewEyeLoc, &_game->m_camera.m_cam.position, SHADER_UNIFORM_VEC3, 1);
@@ -110,6 +169,17 @@ void GameRender(Game* _game)
                 const f32 w = _game->m_passColorPicker.m_texture.texture.width;
                 const f32 h = _game->m_passColorPicker.m_texture.texture.height;
                 DrawTextureRec(_game->m_passColorPicker.m_texture.texture, (Rectangle) { 0.f, 0.f, w, -h }, (Vector2) { 0, 0 }, WHITE);
+            }
+            
+            if (IsKeyPressed(KEY_F3))
+            {
+                _game->m_debugDrawShadowMap = !_game->m_debugDrawShadowMap;
+            }
+            if (_game->m_debugDrawShadowMap)
+            {
+                const f32 w = _game->m_passShadows.depth.width;
+                const f32 h = _game->m_passShadows.depth.height;
+                DrawTextureRec(_game->m_passShadows.depth, (Rectangle) { 0.f, 0.f, w, -h }, (Vector2) { 0, 0 }, WHITE);
             }
 
             ConsoleRender(&_game->m_console, GetFrameTime());

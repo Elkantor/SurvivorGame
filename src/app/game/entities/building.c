@@ -20,7 +20,7 @@ void BuildingInit(Building* _building, const Model _model, const Vector3 _pos, c
     _building->m_projectilesSize = 0;
 }
 
-static const f32 k_buildingShootDuration = 0.5f;
+static const f32 k_buildingShootDuration = 0.8f;
 
 void BuildingShootTo(Building* _building, const Grid _grid, const Vector3 _targetPos, const Model _projectileModel)
 {
@@ -92,17 +92,17 @@ void BuildingUpdate(Building* _building, const f32 _dt)
     }
 }
 
-void BuildingRender(Building* _building, MatCap _matCap, Model _shadow)
+void BuildingRender(Building* _building, MatCap _matCap)
 {
-    const Shader tmp = _building->m_model.materials[0].shader;
-    _building->m_model.materials[0].shader = _matCap.m_shader;
-
-    MatCapUpdate(&_matCap, 0.5f, 1.0f, 5.f, 1.f, ORANGE);
     DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.0f }, 1.f, WHITE);
-    _building->m_model.materials[0].shader = tmp;
 
     for (u8 i = 0; i < _building->m_projectilesSize; ++i)
     {
         ProjectileRender(&_building->m_projectiles[i], _matCap);
     }
+}
+
+void BuildingRenderSimple(Building* _building)
+{
+    DrawModel(_building->m_model, (Vector3) { 0.f, 0.f, 0.0f }, 1.f, WHITE);
 }
