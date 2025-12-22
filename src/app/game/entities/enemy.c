@@ -14,6 +14,7 @@ typedef struct Enemy
 
 
 static const f32 k_enemyMoveDuration = 0.5f;
+static const i32 k_enemySkeletonAnimRun = 6;
 
 void EnemyInit(Enemy* _enemy, const Model _model, const Grid _grid, const Vector3 _pos)
 {
@@ -61,6 +62,13 @@ void EnemyLoad(Enemy* _enemy, const binn* _binn)
     _enemy->m_scale.x = binn_object_float(_binn, "sx");
     _enemy->m_scale.y = binn_object_float(_binn, "sy");
     _enemy->m_scale.z = binn_object_float(_binn, "sz");
+}
+
+f32 EnemyAnimFrameRateCompute(const f32 _dt)
+{
+    const f32 updateRate = 1000.f / (_dt * 1000.f);
+    const f32 realFrameRate = updateRate / 24.f;
+    return realFrameRate;
 }
 
 void EnemyMoveTo(Enemy* _enemy, const Dir _targetDir, const Grid _grid)
@@ -200,13 +208,13 @@ void EnemyRender(Enemy* _enemy)
     DrawModel(_enemy->m_model, (Vector3) { 0.f, 0.f, 0.f }, 1.0f, WHITE);
 }
 
-void EnemyRenderUI(Enemy* _enemy, const Camera _cam, const ModelAnimation* _anim, const u32 _animFrame)
+void EnemyRenderUI(Enemy* _enemy, const Camera _cam, const ModelAnimation* _anim)
 {
     const Vector3 pos = Utils3DGetPosition(_enemy->m_model.transform);
-    const i32 boneChestPosID = 3;
+    const i32 boneChestID = 3;
 
-    const ModelAnimation anim = _anim[6];
-    const Vector3 bonePosChest = anim.framePoses[_animFrame][boneChestPosID].translation;
-    const Vector3 finalPos = Vector3Add(pos, bonePosChest);
+    const ModelAnimation anim = _anim[k_enemySkeletonAnimRun];
+    const Vector3 bonePosChestAt0 = anim.framePoses[0][boneChestID].translation;
+    const Vector3 finalPos = Vector3Add(pos, bonePosChestAt0);
     HPBarRender(finalPos, 1.f, _cam);
 }

@@ -34,11 +34,15 @@ void HPBarRender(const Vector3 _worldPos, const f32 _percent, const Camera _game
         const f32 barX = screenPosition.x - barWidth / 2;
         const f32 barY = screenPosition.y - barHeight;
 
-        DrawRectangle(barX, barY, barWidth, barHeight, WHITE);
+        DrawRectangle(barX, barY, barWidth, barHeight, DARKGRAY);
 
         const f32 healthWidth = _percent * barWidth;
-        DrawRectangle(barX, barY, healthWidth, barHeight, GREEN);
+        const Color greenLight = { 0, 255, 85, 255 };
+        const Color greenDark = { 0, 190, 20, 255 };
+        DrawRectangleGradientV(barX, barY, healthWidth, barHeight, greenLight, greenDark);
 
-        DrawRectangleLines(barX, barY, barWidth, barHeight, DARKGRAY);
+        const f32 borderThickness = 0.02f * unitScale;
+        const Rectangle border = { barX - borderThickness, barY - borderThickness, barWidth + borderThickness, barHeight + borderThickness };
+        DrawRectangleLinesEx(border, borderThickness, DARKGRAY);
     }
 }
